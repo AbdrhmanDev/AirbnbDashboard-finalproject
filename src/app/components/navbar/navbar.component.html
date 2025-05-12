@@ -1,0 +1,144 @@
+<nav class="navbar">
+  <div class="container-fluid">
+    <!-- Left Section -->
+    <div class="navbar-left">
+      <button class="menu-toggle" (click)="toggleSidebar()">
+        <span class="material-icons">menu</span>
+      </button>
+      <div class="logo">
+        <a href="/" class="logo-link">
+          <div class="logo-icon">
+            <span class="material-icons">home_work</span>
+          </div>
+          <div class="logo-text">
+            <span class="logo-name">Airbnb</span>
+            <span class="logo-tagline">Dashboard</span>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <!-- Center Section -->
+    <div class="navbar-center">
+      <div class="search-bar">
+        <span class="material-icons">search</span>
+        <input type="text" placeholder="Search..." (keyup.enter)="onSearch()" />
+      </div>
+    </div>
+
+    <!-- Right Section -->
+    <div class="navbar-right">
+      <!-- Notifications -->
+      <div
+        class="notifications"
+        [class.active]="showNotifications"
+        #notificationsContainer
+      >
+        <button class="icon-button" (click)="toggleNotifications($event)">
+          <span class="material-icons">notifications</span>
+          <span class="notification-badge" *ngIf="unreadCount > 0">{{
+            unreadCount
+          }}</span>
+        </button>
+
+        <!-- Notifications Dropdown -->
+        <div class="notifications-dropdown" *ngIf="showNotifications">
+          <div class="notifications-header">
+            <h3>Notifications</h3>
+            <button class="mark-read-button" (click)="markAllAsRead()">
+              Mark all as read
+            </button>
+          </div>
+          <div class="notifications-list">
+            <div *ngIf="notifications.length === 0" class="no-notifications">
+              No notifications
+            </div>
+            <div
+              *ngFor="let notification of notifications"
+              class="notification-item"
+              [class.unread]="notification.unread"
+            >
+              <div class="notification-icon">
+                <span class="material-icons">{{ notification.icon }}</span>
+              </div>
+              <div class="notification-content">
+                <p class="notification-message">{{ notification.message }}</p>
+                <span class="notification-time">{{ notification.time }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="notifications-footer">
+            <button class="view-all-button">View all notifications</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Total Revenue -->
+      <div
+        class="balance-wrapper"
+        *ngIf="user?.role === 'Host' || user?.role === 'Admin'"
+      >
+        <div class="balance-content">
+          <div class="balance-icon">
+            <span class="material-icons">trending_up</span>
+          </div>
+          <div class="balance-info">
+            <span class="balance-label">Revenue</span>
+            <span class="balance-amount"
+              >${{ totalRevenue | number : "1.0-0" }}</span
+            >
+          </div>
+        </div>
+        <div class="balance-chart">
+          <div
+            class="chart-bar"
+            [style.width.%]="(totalRevenue / 10000) * 100"
+          ></div>
+        </div>
+      </div>
+
+      <!-- User Profile -->
+      <div class="user-menu" [class.active]="isUserMenuOpen">
+        <button class="user-menu-button" (click)="toggleUserMenu()">
+          <div class="user-info">
+            <img
+              [src]="user?.profileImage || 'assets/images/default-avatar.png'"
+              alt="User"
+              class="user-avatar"
+            />
+            <span class="user-name">{{ userName }}</span>
+          </div>
+          <span class="material-icons">expand_more</span>
+        </button>
+
+        <div class="user-dropdown" *ngIf="isUserMenuOpen">
+          <div class="dropdown-header">
+            <img
+              [src]="user?.profileImage || 'assets/images/default-avatar.png'"
+              alt="User"
+              class="dropdown-avatar"
+            />
+            <div class="dropdown-user-info">
+              <h3>{{ userName }}</h3>
+              <p>{{ user?.email }}</p>
+            </div>
+          </div>
+          <div class="dropdown-divider"></div>
+          <a href="/profile" class="dropdown-item">
+            <span class="material-icons">person</span>
+            Profile
+          </a>
+          <a href="/settings" class="dropdown-item">
+            <span class="material-icons">settings</span>
+            Settings
+          </a>
+          <div class="dropdown-divider"></div>
+          <button class="dropdown-item logout" (click)="logout()">
+            <span class="material-icons">logout</span>
+            Logout
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>

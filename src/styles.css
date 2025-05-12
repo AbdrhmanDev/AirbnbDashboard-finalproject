@@ -1,0 +1,45 @@
+/* You can add global styles to this file, and also import other style files */
+@import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
+@import "swiper/css";
+@import "swiper/css/navigation";
+@import "swiper/css/pagination";
+
+/* Material Overrides */
+.mat-mdc-card {
+  background-color: #fff !important;
+  color: #000 !important;
+}
+
+.mat-mdc-table {
+  background-color: #ffffff !important;
+  color: #000 !important;
+}
+
+.mat-mdc-row {
+  color: #000 !important;
+}
+
+.mat-mdc-paginator-container{
+  background-color: #ffffff !important;
+  color: #000 !important;
+}
+.mdc-floating-label
+{
+  color: black !important;
+  
+}
+input{
+  color: black !important;
+}
+ mat-mdc-floating-label
+html,
+body {
+  height: 100%;
+  background-color: #ffffff;
+}
+
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  color: #222222;
+}
