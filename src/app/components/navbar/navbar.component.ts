@@ -71,6 +71,13 @@ export class NavbarComponent implements OnInit, OnDestroy {
       }
     });
 
+    // Subscribe to notifications changes
+    this.notificationService.notifications$.subscribe((notifications) => {
+      console.log('Received notifications update:', notifications);
+      this.notifications = notifications;
+      this.unreadCount = notifications.filter((n) => !n.read).length;
+    });
+
     // Try to load fresh user data if we have a token
     this.loadUser();
   }
@@ -82,10 +89,12 @@ export class NavbarComponent implements OnInit, OnDestroy {
   }
 
   loadNotifications() {
+    console.log('Loading notifications for user:', this.user);
     if (this.user?.role === 'Host' && this.user._id) {
-      // Get host-specific notifications
+      console.log('Loading host notifications for ID:', this.user._id);
       this.notificationService.getHostNotifications(this.user._id).subscribe({
         next: (notifications: Notification[]) => {
+          console.log('Host notifications loaded:', notifications);
           this.notifications = notifications;
           this.unreadCount = notifications.filter(
             (n: Notification) => !n.read
@@ -93,12 +102,15 @@ export class NavbarComponent implements OnInit, OnDestroy {
         },
         error: (error: Error) => {
           console.error('Error loading host notifications:', error);
+          this.notifications = [];
+          this.unreadCount = 0;
         },
       });
     } else if (this.user?.role === 'Admin') {
-      // Get all notifications for admin
+      console.log('Loading admin notifications');
       this.notificationService.getNotifications().subscribe({
         next: (notifications: Notification[]) => {
+          console.log('Admin notifications loaded:', notifications);
           this.notifications = notifications;
           this.unreadCount = notifications.filter(
             (n: Notification) => !n.read
@@ -106,8 +118,14 @@ export class NavbarComponent implements OnInit, OnDestroy {
         },
         error: (error: Error) => {
           console.error('Error loading notifications:', error);
+          this.notifications = [];
+          this.unreadCount = 0;
         },
       });
+    } else {
+      console.log('No notifications to load for current user role');
+      this.notifications = [];
+      this.unreadCount = 0;
     }
   }
 
@@ -153,6 +171,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
     if (this.user?.role === 'Host' && this.user._id) {
       this.bookingService.getHostBookings(this.user._id).subscribe({
         next: (bookings) => {
+          console.log('Host bookings:', bookings); // Debug log
           // Convert bookings to activities
           const activities = bookings.map((booking) => ({
             type: booking.properties[0]?.status || 'pending',
@@ -179,11 +198,13 @@ export class NavbarComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           console.error('Error loading host activities:', error);
+          this.recentActivities = [];
         },
       });
     } else if (this.user?.role === 'Admin') {
       this.bookingService.getBookings().subscribe({
         next: (bookings) => {
+          console.log('Admin bookings:', bookings); // Debug log
           const activities = bookings.map((booking) => ({
             type: booking.properties[0]?.status || 'pending',
             message: `New booking for ${
@@ -207,8 +228,11 @@ export class NavbarComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           console.error('Error loading admin activities:', error);
+          this.recentActivities = [];
         },
       });
+    } else {
+      this.recentActivities = [];
     }
   }
 

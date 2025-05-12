@@ -43,7 +43,7 @@ export class HomeComponent implements OnInit {
   recentActivities: any[] = [];
   bookingStats = {
     total: 0,
-    confirmed: 0,
+    completed: 0,
     pending: 0,
     cancelled: 0,
     revenue: 0,
@@ -94,9 +94,9 @@ export class HomeComponent implements OnInit {
       0
     );
 
-    this.bookingStats.confirmed = bookings.reduce(
+    this.bookingStats.completed = bookings.reduce(
       (sum, booking) =>
-        sum + booking.properties.filter((p) => p.status === 'confirmed').length,
+        sum + booking.properties.filter((p) => p.status === 'completed').length,
       0
     );
 
@@ -114,7 +114,7 @@ export class HomeComponent implements OnInit {
 
     this.bookingStats.revenue = bookings.reduce((sum, booking) => {
       const confirmedPropertiesRevenue = booking.properties
-        .filter((p) => p.status === 'confirmed')
+        .filter((p) => p.status === 'cancelled')
         .reduce((propSum, prop) => propSum + prop.totalPrice, 0);
       return sum + confirmedPropertiesRevenue;
     }, 0);
@@ -252,5 +252,4 @@ export class HomeComponent implements OnInit {
 
     return Math.floor(seconds) + ' seconds ago';
   }
-  
 }
