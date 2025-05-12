@@ -23,14 +23,14 @@
         </a>
       </li>
 
-      <li class="nav-item" [routerLinkActive]="'active'">
+      <li class="nav-item" [routerLinkActive]="'active'" *ngIf="userRole === 'Admin'">
         <a [routerLink]="['/users']">
           <span class="material-icons">group</span>
           <span class="nav-text">Users</span>
         </a>
       </li>
 
-  
+
 
       <li class="nav-item" [routerLinkActive]="'active'">
         <a [routerLink]="['/payments']">

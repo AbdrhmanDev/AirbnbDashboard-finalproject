@@ -22,7 +22,9 @@ export class HotelsService {
     });
   }
   getHotels(): Observable<Hotel[]> {
-    return this.http.get<Hotel[]>(this.apiUrl);
+    return this.http.get<Hotel[]>(`${this.apiUrl}/hostHotel`, {
+      headers: this.getAuthHeaders(),
+    });
   }
   deleteHotel(id: string): Observable<any> {
     const url = `${this.apiUrl}/${id}`; // Construct the URL for the specific hotel
@@ -46,7 +48,6 @@ export class HotelsService {
       .patch<Hotel>(url, hotel, { headers: this.getAuthHeaders() })
       .pipe(catchError(this.handleError));
   }
-
 
   // Error handling
   private handleError(error: HttpErrorResponse) {
