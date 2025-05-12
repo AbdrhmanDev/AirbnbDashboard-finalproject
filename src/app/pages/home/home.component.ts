@@ -252,4 +252,5 @@ export class HomeComponent implements OnInit {
 
     return Math.floor(seconds) + ' seconds ago';
   }
+  
 }

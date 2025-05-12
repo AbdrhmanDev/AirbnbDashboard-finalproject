@@ -8,7 +8,10 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import { NotificationService } from '../../services/notification.service';
+import {
+  NotificationService,
+  Notification,
+} from '../../services/notification.service';
 import { LoginService } from '../../services/login.service';
 import { UserService } from '../../services/user.service';
 import { UserStateService } from '../../services/user-state.service';
@@ -27,32 +30,9 @@ import { FormsModule } from '@angular/forms';
 export class NavbarComponent implements OnInit, OnDestroy {
   @ViewChild('notificationsContainer') notificationsContainer!: ElementRef;
 
-  public notifications = [
-    {
-      id: 1,
-      icon: 'payment',
-      message: 'Payment completed successfully',
-      time: '5 minutes ago',
-      unread: true,
-    },
-    {
-      id: 2,
-      icon: 'shopping_cart',
-      message: 'Your order #12345 has been confirmed',
-      time: '1 hour ago',
-      unread: false,
-    },
-    {
-      id: 3,
-      icon: 'local_offer',
-      message: 'New offer available',
-      time: '3 hours ago',
-      unread: false,
-    },
-  ];
-
+  public recentActivities: any[] = [];
+  public notifications: Notification[] = [];
   public totalRevenue = 0;
-  public unreadNotifications = 3;
   public user: UserResponse | null = null;
   public showNotifications = false;
   public unreadCount = 0;
@@ -77,20 +57,18 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.user = this.userStateService.getUser();
     if (this.user?._id) {
       this.loadTotalRevenue(this.user._id);
+      this.loadRecentActivities();
+      this.loadNotifications();
     }
 
     // Subscribe to user state changes
     this.userSubscription = this.userStateService.user$.subscribe((user) => {
       this.user = user;
-      console.log('User state updated in navbar:', user);
       if (user?._id) {
         this.loadTotalRevenue(user._id);
+        this.loadRecentActivities();
+        this.loadNotifications();
       }
-    });
-
-    // Load notifications
-    this.notificationService.getNotifications().subscribe((notifications) => {
-      this.unreadCount = notifications.filter((n) => !n.read).length;
     });
 
     // Try to load fresh user data if we have a token
@@ -103,13 +81,41 @@ export class NavbarComponent implements OnInit, OnDestroy {
     }
   }
 
+  loadNotifications() {
+    if (this.user?.role === 'Host' && this.user._id) {
+      // Get host-specific notifications
+      this.notificationService.getHostNotifications(this.user._id).subscribe({
+        next: (notifications: Notification[]) => {
+          this.notifications = notifications;
+          this.unreadCount = notifications.filter(
+            (n: Notification) => !n.read
+          ).length;
+        },
+        error: (error: Error) => {
+          console.error('Error loading host notifications:', error);
+        },
+      });
+    } else if (this.user?.role === 'Admin') {
+      // Get all notifications for admin
+      this.notificationService.getNotifications().subscribe({
+        next: (notifications: Notification[]) => {
+          this.notifications = notifications;
+          this.unreadCount = notifications.filter(
+            (n: Notification) => !n.read
+          ).length;
+        },
+        error: (error: Error) => {
+          console.error('Error loading notifications:', error);
+        },
+      });
+    }
+  }
+
   loadTotalRevenue(userId: string) {
-    // If user is a host, get their bookings
     if (this.user?.role === 'Host') {
       this.bookingService.getHostBookings(userId).subscribe({
         next: (bookings) => {
           this.totalRevenue = bookings.reduce((total, booking) => {
-            // Sum up confirmed properties' total prices
             const confirmedPropertiesTotal = booking.properties
               .filter((prop) => prop.status === 'confirmed')
               .reduce(
@@ -118,22 +124,15 @@ export class NavbarComponent implements OnInit, OnDestroy {
               );
             return total + confirmedPropertiesTotal;
           }, 0);
-          console.log(
-            'Total Revenue from confirmed bookings:',
-            this.totalRevenue
-          );
         },
         error: (error) => {
           console.error('Error loading total revenue:', error);
         },
       });
-    }
-    // If user is an admin, get all bookings
-    else if (this.user?.role === 'Admin') {
+    } else if (this.user?.role === 'Admin') {
       this.bookingService.getBookings().subscribe({
         next: (bookings) => {
           this.totalRevenue = bookings.reduce((total, booking) => {
-            // Sum up confirmed properties' total prices
             const confirmedPropertiesTotal = booking.properties
               .filter((prop) => prop.status === 'confirmed')
               .reduce(
@@ -142,10 +141,6 @@ export class NavbarComponent implements OnInit, OnDestroy {
               );
             return total + confirmedPropertiesTotal;
           }, 0);
-          console.log(
-            'Total Revenue from confirmed bookings:',
-            this.totalRevenue
-          );
         },
         error: (error) => {
           console.error('Error loading total revenue:', error);
@@ -154,29 +149,86 @@ export class NavbarComponent implements OnInit, OnDestroy {
     }
   }
 
+  loadRecentActivities() {
+    if (this.user?.role === 'Host' && this.user._id) {
+      this.bookingService.getHostBookings(this.user._id).subscribe({
+        next: (bookings) => {
+          // Convert bookings to activities
+          const activities = bookings.map((booking) => ({
+            type: booking.properties[0]?.status || 'pending',
+            message: `New booking for ${
+              typeof booking.properties[0]?.propertyId === 'object'
+                ? booking.properties[0]?.propertyId?.title
+                : 'Property'
+            }`,
+            time: booking.createdAt || new Date(),
+            amount: booking.properties[0]?.totalPrice || 0,
+          }));
+
+          // Sort by time and take the most recent 5
+          this.recentActivities = activities
+            .sort(
+              (a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()
+            )
+            .slice(0, 5);
+
+          // Update unread count to include new activities
+          this.unreadCount =
+            this.notifications.filter((n) => !n.read).length +
+            this.recentActivities.filter((a) => a.type === 'pending').length;
+        },
+        error: (error) => {
+          console.error('Error loading host activities:', error);
+        },
+      });
+    } else if (this.user?.role === 'Admin') {
+      this.bookingService.getBookings().subscribe({
+        next: (bookings) => {
+          const activities = bookings.map((booking) => ({
+            type: booking.properties[0]?.status || 'pending',
+            message: `New booking for ${
+              typeof booking.properties[0]?.propertyId === 'object'
+                ? booking.properties[0]?.propertyId?.title
+                : 'Property'
+            }`,
+            time: booking.createdAt || new Date(),
+            amount: booking.properties[0]?.totalPrice || 0,
+          }));
+
+          this.recentActivities = activities
+            .sort(
+              (a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()
+            )
+            .slice(0, 5);
+
+          this.unreadCount =
+            this.notifications.filter((n) => !n.read).length +
+            this.recentActivities.filter((a) => a.type === 'pending').length;
+        },
+        error: (error) => {
+          console.error('Error loading admin activities:', error);
+        },
+      });
+    }
+  }
+
   loadUser() {
-    // First try to get user data from localStorage
     const userData = this.loginService.getUserData();
     if (userData) {
       this.userStateService.setUser(userData);
-      console.log('User loaded from localStorage:', userData);
     }
 
-    // Then try to get fresh data from the server
     const token = this.loginService.getToken();
     if (token) {
       try {
         const tokenPayload = JSON.parse(atob(token.split('.')[1]));
         const userId = tokenPayload.id;
-        console.log('Token payload:', tokenPayload);
-        console.log('User ID:', userId);
 
         if (userId) {
           this.userService.getUserById(userId).subscribe({
             next: (user) => {
               this.userStateService.setUser(user);
               this.loginService.saveUserData(user);
-              console.log('User loaded from server:', user);
             },
             error: (error) => {
               console.error('Error loading user:', error);
@@ -212,13 +264,14 @@ export class NavbarComponent implements OnInit, OnDestroy {
   }
 
   public toggleNotifications(event: Event) {
-    event.stopPropagation(); // Prevent the click from immediately closing the dropdown
+    event.stopPropagation();
     this.showNotifications = !this.showNotifications;
   }
 
   public markAllAsRead() {
     this.notificationService.markAllAsRead();
     this.unreadCount = 0;
+    this.loadNotifications();
   }
 
   public logout() {
@@ -227,7 +280,6 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.router.navigate(['/login']);
   }
 
-  // Computed properties for user information
   public get userName(): string {
     return this.user ? `${this.user.firstName} ${this.user.lastName}` : 'Guest';
   }
@@ -247,7 +299,6 @@ export class NavbarComponent implements OnInit, OnDestroy {
     }
   }
 
-  // UI interaction methods
   public toggleSidebar(): void {
     // Implement sidebar toggle logic
   }
@@ -257,7 +308,34 @@ export class NavbarComponent implements OnInit, OnDestroy {
   }
 
   public onSearch(): void {
-    // Implement search logic
-    console.log('Searching for:', this.searchQuery);
+    if (this.searchQuery.trim()) {
+      this.router.navigate(['/search'], {
+        queryParams: { q: this.searchQuery },
+      });
+    }
+  }
+
+  formatCurrency(amount: number): string {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+    }).format(amount);
+  }
+
+  getTimeAgo(date: Date): string {
+    const now = new Date();
+    const bookingDate = new Date(date);
+
+    // Format the date
+    const options: Intl.DateTimeFormatOptions = {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+    };
+
+    return bookingDate.toLocaleString('en-US', options);
   }
 }
