@@ -42,7 +42,7 @@ import { UserResponse } from '../../models/user';
 })
 export class UsersComponent implements OnInit {
   displayedColumns: string[] = [
-    'profileImage',
+    'avatar',
     'name',
     'email',
     'phone',
@@ -101,7 +101,7 @@ export class UsersComponent implements OnInit {
   }
 
   getFullName(user: UserResponse): string {
-    return `${user.firstName} ${user.lastName}`;
+    return `${user.name} `;
   }
 
   getRoleClass(role: string): string {

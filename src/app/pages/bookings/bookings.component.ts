@@ -153,13 +153,9 @@ export class BookingsComponent implements OnInit {
               .includes(searchStr.searchTerm.toLowerCase())
           ) ||
           (typeof data.userId !== 'string' &&
-            data.userId?.firstName
+            data.userId?.name
               ?.toLowerCase()
-              .includes(searchStr.searchTerm.toLowerCase())) ||
-          (typeof data.userId !== 'string' &&
-            data.userId?.lastName
-              ?.toLowerCase()
-              .includes(searchStr.searchTerm.toLowerCase()));
+              .includes(searchStr.searchTerm.toLowerCase())) 
 
         // Status filter - check any property's status
         const statusMatch =

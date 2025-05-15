@@ -12,11 +12,10 @@ export interface HostDetails {
 
 export interface User {
   _id: string;
-  firstName: string;
-  lastName: string;
+  name: string;
   email: string;
   phone: string;
-  profileImage: string;
+  avatar: string;
   dateOfBirth: string;
   gender: string;
   role: string;

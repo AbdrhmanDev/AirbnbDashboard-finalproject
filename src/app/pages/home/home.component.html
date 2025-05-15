@@ -73,10 +73,7 @@
         </mat-card-header>
         <mat-card-content>
           <div class="property-list">
-            <div
-              class="property-item"
-              *ngFor="let property of popularProperties"
-            >
+            <div class="property-item" *ngFor="let property of popularProperties">
               <div class="property-info">
                 <h4>{{ property.title }}</h4>
                 <p>
@@ -85,18 +82,13 @@
                 </p>
               </div>
               <div class="property-stats">
-                <mat-progress-bar
-                  mode="determinate"
-                  [value]="(property.count / bookingStats.total) * 100"
-                >
+                <mat-progress-bar mode="determinate" [value]="(property.count / bookingStats.total) * 100">
                 </mat-progress-bar>
                 <div class="stats-details">
                   <span class="property-revenue">{{
                     formatCurrency(property.revenue)
-                  }}</span>
-                  <span class="last-booking"
-                    >Last booking: {{ getTimeAgo(property.lastBooking) }}</span
-                  >
+                    }}</span>
+                  <span class="last-booking">Last booking: {{ getTimeAgo(property.lastBooking) }}</span>
                 </div>
               </div>
             </div>
@@ -111,18 +103,15 @@
         </mat-card-header>
         <mat-card-content>
           <div class="activity-list">
-            <div
-              class="activity-item"
-              *ngFor="let activity of recentActivities"
-            >
+            <div class="activity-item" *ngFor="let activity of recentActivities">
               <div class="activity-icon" [ngClass]="activity.type">
                 <mat-icon>
                   {{
-                    activity.type === "completed"
-                      ? "check_circle"
-                      : activity.type === "pending"
-                      ? "pending"
-                      : "cancel"
+                  activity.type === "completed"
+                  ? "check_circle"
+                  : activity.type === "pending"
+                  ? "pending"
+                  : "cancel"
                   }}
                 </mat-icon>
               </div>
@@ -130,7 +119,7 @@
                 <p class="activity-message">{{ activity.message }}</p>
                 <span class="activity-time">{{
                   getTimeAgo(activity.time)
-                }}</span>
+                  }}</span>
               </div>
               <div class="activity-amount">
                 {{ formatCurrency(activity.amount) }}
@@ -165,10 +154,10 @@
         <ng-container matColumnDef="guest">
           <th mat-header-cell *matHeaderCellDef>Guest</th>
           <td mat-cell *matCellDef="let booking">
-            {{ 
-              typeof booking.userId === 'string' 
-                ? 'Guest ' + booking.userId.substring(0, 8)
-                : booking.userId.firstName + ' ' + booking.userId.lastName
+            {{
+            typeof booking.userId === 'string'
+            ? 'Guest ' + booking.userId.substring(0, 8)
+            : booking.userId.name 
             }}
           </td>
         </ng-container>
@@ -177,10 +166,10 @@
         <ng-container matColumnDef="property">
           <th mat-header-cell *matHeaderCellDef>Property</th>
           <td mat-cell *matCellDef="let booking">
-            {{ 
-              typeof booking.properties[0]?.propertyId === 'string'
-                ? 'Property ' + booking.properties[0].propertyId.substring(0, 8)
-                : booking.properties[0]?.propertyId.title
+            {{
+            typeof booking.properties[0]?.propertyId === 'string'
+            ? 'Property ' + booking.properties[0].propertyId.substring(0, 8)
+            : booking.properties[0]?.propertyId.title
             }}
           </td>
         </ng-container>

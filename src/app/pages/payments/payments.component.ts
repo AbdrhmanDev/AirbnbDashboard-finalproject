@@ -49,7 +49,7 @@ import { MatSpinner } from '@angular/material/progress-spinner';
     MatNativeDateModule,
     MatChipsModule,
     MatTooltipModule,
-    MatSpinner
+    MatSpinner,
   ],
 })
 export class PaymentsComponent implements OnInit {
@@ -159,14 +159,7 @@ export class PaymentsComponent implements OnInit {
             .includes(searchStr.searchTerm.toLowerCase()) ||
           data.transactionId
             ?.toLowerCase()
-            .includes(searchStr.searchTerm.toLowerCase()) ||
-          (typeof data.userId !== 'string' &&
-            (data.userId?.firstName
-              ?.toLowerCase()
-              .includes(searchStr.searchTerm.toLowerCase()) ||
-              data.userId?.lastName
-                ?.toLowerCase()
-                .includes(searchStr.searchTerm.toLowerCase())));
+            .includes(searchStr.searchTerm.toLowerCase()) 
 
         // Status filter
         const statusMatch =
@@ -197,11 +190,11 @@ export class PaymentsComponent implements OnInit {
           (!endDate || paymentDate <= endDate);
 
         return (
-          searchTermMatch &&
-          statusMatch &&
-          methodMatch &&
-          amountMatch &&
-          dateRangeMatch
+          !!searchTermMatch &&
+          !!statusMatch &&
+          !!methodMatch &&
+          !!amountMatch &&
+          !!dateRangeMatch
         );
       } catch (error) {
         console.error('Error parsing filter:', error);

@@ -7,12 +7,7 @@
       </h1>
       <p class="subtitle">Manage and monitor user accounts</p>
     </div>
-    <button
-      mat-raised-button
-      color="primary"
-      routerLink="/create-users"
-      class="add-button"
-    >
+    <button mat-raised-button color="primary" routerLink="/create-users" class="add-button">
       <mat-icon>person_add</mat-icon>
       Add New User
     </button>
@@ -22,12 +17,7 @@
     <div class="search-field">
       <mat-form-field appearance="outline" class="search-input">
         <mat-label>Search Users</mat-label>
-        <input
-          matInput
-          (keyup)="onSearch($event)"
-          [value]="searchTerm"
-          placeholder="Search by name, email..."
-        />
+        <input matInput (keyup)="onSearch($event)" [value]="searchTerm" placeholder="Search by name, email..." />
         <mat-icon matSuffix>search</mat-icon>
       </mat-form-field>
     </div>
@@ -35,10 +25,7 @@
     <div class="filter-fields">
       <mat-form-field appearance="outline">
         <mat-label>Role</mat-label>
-        <mat-select
-          [(value)]="selectedRole"
-          (selectionChange)="onRoleFilter($event.value)"
-        >
+        <mat-select [(value)]="selectedRole" (selectionChange)="onRoleFilter($event.value)">
           <mat-option value="all">All Roles</mat-option>
           <mat-option value="Guest">Guest</mat-option>
           <mat-option value="Host">Host</mat-option>
@@ -51,15 +38,12 @@
   <div class="users-table-container mat-elevation-z8">
     <table mat-table [dataSource]="filteredUsers" matSort class="users-table">
       <!-- Profile Image Column -->
-      <ng-container matColumnDef="profileImage">
+      <ng-container matColumnDef="avatar">
         <th mat-header-cell *matHeaderCellDef>Profile</th>
         <td mat-cell *matCellDef="let user">
           <div class="user-avatar">
-            <img
-              [src]="user.profileImage || 'assets/images/default-avatar.png'"
-              [alt]="getFullName(user)"
-              class="profile-image"
-            />
+            <img [src]="user.avatar || 'assets/images/default-avatar.png'" [alt]="getFullName(user)"
+              class="profile-image" />
           </div>
         </td>
       </ng-container>
@@ -84,7 +68,7 @@
       <!-- Phone Column -->
       <ng-container matColumnDef="phone">
         <th mat-header-cell *matHeaderCellDef>Phone</th>
-        <td mat-cell *matCellDef="let user">{{ user.phone || "N/A" }}</td>
+        <td mat-cell *matCellDef="let user">{{ user.phone || " " }}</td>
       </ng-container>
 
       <!-- Role Column -->
@@ -100,28 +84,13 @@
         <th mat-header-cell *matHeaderCellDef>Actions</th>
         <td mat-cell *matCellDef="let user">
           <div class="action-buttons">
-            <button
-              mat-icon-button
-              color="primary"
-              (click)="viewUserDetails(user._id)"
-              matTooltip="View Details"
-            >
+            <button mat-icon-button color="primary" (click)="viewUserDetails(user._id)" matTooltip="View Details">
               <mat-icon>visibility</mat-icon>
             </button>
-            <button
-              mat-icon-button
-              color="accent"
-              (click)="editUser(user._id)"
-              matTooltip="Edit User"
-            >
+            <button mat-icon-button color="accent" (click)="editUser(user._id)" matTooltip="Edit User">
               <mat-icon>edit</mat-icon>
             </button>
-            <button
-              mat-icon-button
-              color="warn"
-              (click)="deleteUser(user._id)"
-              matTooltip="Delete User"
-            >
+            <button mat-icon-button color="warn" (click)="deleteUser(user._id)" matTooltip="Delete User">
               <mat-icon>delete</mat-icon>
             </button>
           </div>
@@ -129,19 +98,11 @@
       </ng-container>
 
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr
-        mat-row
-        *matRowDef="let row; columns: displayedColumns"
-        class="user-row"
-      ></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns" class="user-row"></tr>
     </table>
 
-    <mat-paginator
-      [pageSizeOptions]="[5, 10, 25, 100]"
-      [pageSize]="10"
-      showFirstLastButtons
-      aria-label="Select page of users"
-    >
+    <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" [pageSize]="10" showFirstLastButtons
+      aria-label="Select page of users">
     </mat-paginator>
   </div>
 </div>

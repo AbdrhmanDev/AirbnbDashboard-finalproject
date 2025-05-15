@@ -60,15 +60,7 @@ export class UserEditComponent implements OnInit {
     this.maxDate.setFullYear(this.maxDate.getFullYear() - 18);
 
     this.userForm = this.fb.group({
-      firstName: [
-        '',
-        [
-          Validators.required,
-          Validators.minLength(2),
-          Validators.maxLength(50),
-        ],
-      ],
-      lastName: [
+      name: [
         '',
         [
           Validators.required,
@@ -85,7 +77,7 @@ export class UserEditComponent implements OnInit {
         ],
       ],
       phone: ['', [Validators.pattern(/^(01)(0|1|2|5)\d{8}$/)]],
-      profileImage: [''],
+      avatar: [''],
       dateOfBirth: ['', [Validators.required, this.dateOfBirthValidator()]],
       gender: [''],
       address: this.fb.group({
@@ -128,12 +120,11 @@ export class UserEditComponent implements OnInit {
       next: (user) => {
         this.currentUser = user;
         this.userForm.patchValue({
-          firstName: user.firstName,
-          lastName: user.lastName,
+          name: user.name,
           email: user.email,
           phone: user.phone || '',
           role: user.role,
-          profileImage: user.profileImage || '',
+          avatar: user.avatar || '',
           dateOfBirth: user.dateOfBirth ? new Date(user.dateOfBirth) : '',
           gender: user.gender || '',
           address: {
@@ -141,7 +132,7 @@ export class UserEditComponent implements OnInit {
             city: user.address?.city || '',
           },
         });
-        this.imagePreview = user.profileImage || null;
+        this.imagePreview = user.avatar || null;
         this.isLoading = false;
       },
       error: (error) => {
@@ -163,7 +154,7 @@ export class UserEditComponent implements OnInit {
         const base64String = await this.convertFileToBase64(file);
         this.imagePreview = base64String;
         this.userForm.patchValue({
-          profileImage: base64String,
+          avatar: base64String,
         });
       } catch (error) {
         this.snackBar.open('Error processing image', 'Close', {

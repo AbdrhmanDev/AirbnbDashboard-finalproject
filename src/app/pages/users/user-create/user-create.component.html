@@ -14,38 +14,19 @@
       <div class="form-row">
         <mat-form-field appearance="outline">
           <mat-label>First Name</mat-label>
-          <input
-            matInput
-            formControlName="firstName"
-            placeholder="Enter first name"
-          />
-          <mat-error *ngIf="userForm.get('firstName')?.invalid">
-            {{ getErrorMessage("firstName") }}
+          <input matInput formControlName="name" placeholder="Enter first name" />
+          <mat-error *ngIf="userForm.get('name')?.invalid">
+            {{ getErrorMessage("name") }}
           </mat-error>
         </mat-form-field>
 
-        <mat-form-field appearance="outline">
-          <mat-label>Last Name</mat-label>
-          <input
-            matInput
-            formControlName="lastName"
-            placeholder="Enter last name"
-          />
-          <mat-error *ngIf="userForm.get('lastName')?.invalid">
-            {{ getErrorMessage("lastName") }}
-          </mat-error>
-        </mat-form-field>
+        
       </div>
 
       <div class="form-row">
         <mat-form-field appearance="outline">
           <mat-label>Email</mat-label>
-          <input
-            matInput
-            formControlName="email"
-            placeholder="Enter email"
-            type="email"
-          />
+          <input matInput formControlName="email" placeholder="Enter email" type="email" />
           <mat-error *ngIf="userForm.get('email')?.invalid">
             {{ getErrorMessage("email") }}
           </mat-error>
@@ -53,11 +34,7 @@
 
         <mat-form-field appearance="outline">
           <mat-label>Phone</mat-label>
-          <input
-            matInput
-            formControlName="phone"
-            placeholder="Enter phone number"
-          />
+          <input matInput formControlName="phone" placeholder="Enter phone number" />
           <mat-error *ngIf="userForm.get('phone')?.invalid">
             {{ getErrorMessage("phone") }}
           </mat-error>
@@ -67,17 +44,9 @@
       <div class="form-row">
         <mat-form-field appearance="outline">
           <mat-label>Date of Birth</mat-label>
-          <input
-            matInput
-            [matDatepicker]="picker"
-            formControlName="dateOfBirth"
-            [max]="maxDate"
-            placeholder="Choose a date"
-          />
-          <mat-datepicker-toggle
-            matSuffix
-            [for]="picker"
-          ></mat-datepicker-toggle>
+          <input matInput [matDatepicker]="picker" formControlName="dateOfBirth" [max]="maxDate"
+            placeholder="Choose a date" />
+          <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
           <mat-datepicker #picker></mat-datepicker>
           <mat-error *ngIf="userForm.get('dateOfBirth')?.invalid">
             {{ getErrorMessage("dateOfBirth") }}
@@ -96,11 +65,7 @@
       <div formGroupName="address" class="form-row">
         <mat-form-field appearance="outline">
           <mat-label>Country</mat-label>
-          <input
-            matInput
-            formControlName="country"
-            placeholder="Enter country"
-          />
+          <input matInput formControlName="country" placeholder="Enter country" />
           <mat-error *ngIf="userForm.get('address.country')?.invalid">
             Country is required
           </mat-error>
@@ -132,12 +97,7 @@
       <div class="form-row">
         <mat-form-field appearance="outline">
           <mat-label>Password</mat-label>
-          <input
-            matInput
-            formControlName="password"
-            type="password"
-            placeholder="Enter password"
-          />
+          <input matInput formControlName="password" type="password" placeholder="Enter password" />
           <mat-error *ngIf="userForm.get('password')?.invalid">
             {{ getErrorMessage("password") }}
           </mat-error>
@@ -145,12 +105,7 @@
 
         <mat-form-field appearance="outline">
           <mat-label>Confirm Password</mat-label>
-          <input
-            matInput
-            formControlName="confirmPassword"
-            type="password"
-            placeholder="Confirm password"
-          />
+          <input matInput formControlName="confirmPassword" type="password" placeholder="Confirm password" />
           <mat-error *ngIf="userForm.get('confirmPassword')?.invalid">
             {{ getErrorMessage("confirmPassword") }}
           </mat-error>
@@ -160,19 +115,9 @@
       <div class="form-row">
         <div class="file-upload">
           <div class="image-preview" *ngIf="imagePreview">
-            <img
-              [src]="imagePreview"
-              alt="Profile preview"
-              class="preview-image"
-            />
+            <img [src]="imagePreview" alt="Profile preview" class="preview-image" />
           </div>
-          <input
-            type="file"
-            #fileInput
-            (change)="onFileSelected($event)"
-            accept="image/*"
-            style="display: none"
-          />
+          <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" style="display: none" />
           <button type="button" mat-stroked-button (click)="fileInput.click()">
             <mat-icon>cloud_upload</mat-icon>
             {{ selectedFile ? selectedFile.name : "Upload Profile Image" }}
@@ -184,12 +129,7 @@
         <button type="button" mat-stroked-button routerLink="/users">
           Cancel
         </button>
-        <button
-          type="submit"
-          mat-raised-button
-          color="primary"
-          [disabled]="userForm.invalid || isSubmitting"
-        >
+        <button type="submit" mat-raised-button color="primary" [disabled]="userForm.invalid || isSubmitting">
           Create User
         </button>
       </div>

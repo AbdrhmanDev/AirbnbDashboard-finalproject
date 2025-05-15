@@ -23,8 +23,8 @@
             <div class="profile-header">
                 <div class="profile-image-section">
                     <div class="image-preview">
-                        <img [src]="imagePreview || user.profileImage || 'assets/images/default-avatar.png'"
-                            [alt]="user.firstName + ' ' + user.lastName" class="profile-image" />
+                        <img [src]="imagePreview || user.avatar || 'assets/images/default-avatar.png'" [alt]="user.name"
+                            class="profile-image" />
                     </div>
                     <div class="image-upload" *ngIf="isEditing">
                         <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*"
@@ -36,7 +36,7 @@
                     </div>
                 </div>
                 <div class="profile-title">
-                    <h2>{{ user.firstName }} {{ user.lastName }}</h2>
+                    <h2>{{ user.name }}</h2>
                     <span class="role-badge" [class]="user.role.toLowerCase()">{{ user.role }}</span>
                 </div>
             </div>
@@ -46,19 +46,13 @@
                     <div class="form-row">
                         <mat-form-field appearance="outline">
                             <mat-label>First Name</mat-label>
-                            <input matInput formControlName="firstName" [readonly]="!isEditing" />
-                            <mat-error *ngIf="profileForm.get('firstName')?.invalid">
-                                {{ getErrorMessage('firstName') }}
+                            <input matInput formControlName="name" [readonly]="!isEditing" />
+                            <mat-error *ngIf="profileForm.get('name')?.invalid">
+                                {{ getErrorMessage('name') }}
                             </mat-error>
                         </mat-form-field>
 
-                        <mat-form-field appearance="outline">
-                            <mat-label>Last Name</mat-label>
-                            <input matInput formControlName="lastName" [readonly]="!isEditing" />
-                            <mat-error *ngIf="profileForm.get('lastName')?.invalid">
-                                {{ getErrorMessage('lastName') }}
-                            </mat-error>
-                        </mat-form-field>
+
                     </div>
 
                     <div class="form-row">

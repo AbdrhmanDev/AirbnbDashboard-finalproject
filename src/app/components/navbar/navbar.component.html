@@ -128,7 +128,7 @@
       <div class="user-menu" [class.active]="isUserMenuOpen">
         <button class="user-menu-button" (click)="toggleUserMenu()">
           <div class="user-info">
-            <img [src]="user?.profileImage || 'assets/images/default-avatar.png'" alt="User" class="user-avatar" />
+            <img [src]="user?.avatar || 'assets/images/default-avatar.png'" alt="User" class="user-avatar" />
             <span class="user-name">{{ userName }}</span>
           </div>
           <span class="material-icons">expand_more</span>
@@ -136,7 +136,7 @@
 
         <div class="user-dropdown" *ngIf="isUserMenuOpen">
           <div class="dropdown-header">
-            <img [src]="user?.profileImage || 'assets/images/default-avatar.png'" alt="User" class="dropdown-avatar" />
+            <img [src]="user?.avatar || 'assets/images/default-avatar.png'" alt="User" class="dropdown-avatar" />
             <div class="dropdown-user-info">
               <h3>{{ userName }}</h3>
               <p>{{ user?.email }}</p>

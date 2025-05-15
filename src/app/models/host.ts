@@ -5,13 +5,12 @@ export interface HostDetails {
 
 export interface Host {
   _id: string;
-  firstName: string;
-  lastName: string;
+  name: string;
   email: string;
   phone: string;
   gender: string;
   dateOfBirth: string;
-  profileImage: string;
+  avatar: string;
   role: string;
   address: {
     country: string;

@@ -55,7 +55,7 @@ export class UserCreateComponent implements OnInit {
 
     this.userForm = this.fb.group(
       {
-        firstName: [
+        name: [
           '',
           [
             Validators.required,
@@ -63,14 +63,7 @@ export class UserCreateComponent implements OnInit {
             Validators.maxLength(50),
           ],
         ],
-        lastName: [
-          '',
-          [
-            Validators.required,
-            Validators.minLength(2),
-            Validators.maxLength(50),
-          ],
-        ],
+
         email: [
           '',
           [
@@ -82,7 +75,7 @@ export class UserCreateComponent implements OnInit {
         password: ['', [Validators.required, Validators.minLength(6)]],
         confirmPassword: ['', [Validators.required]],
         phone: ['', [Validators.pattern(/^(01)(0|1|2|5)\d{8}$/)]],
-        profileImage: [''],
+        avatar: [''],
         dateOfBirth: ['', [Validators.required, this.dateOfBirthValidator()]],
         gender: [''],
         address: this.fb.group({
@@ -135,7 +128,7 @@ export class UserCreateComponent implements OnInit {
         const base64String = await this.convertFileToBase64(file);
         this.imagePreview = base64String;
         this.userForm.patchValue({
-          profileImage: base64String,
+          avatar: base64String,
         });
       } catch (error) {
         this.snackBar.open('Error processing image', 'Close', {

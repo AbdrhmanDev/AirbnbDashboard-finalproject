@@ -31,8 +31,7 @@ describe('UserService', () => {
     const mockUsers = [
       {
         _id: '1',
-        firstName: 'John',
-        lastName: 'Doe',
+        name: 'John',
         email: 'john@example.com',
         role: 'Guest',
       },
@@ -49,8 +48,7 @@ describe('UserService', () => {
 
   it('should create a user', () => {
     const mockUser = {
-      firstName: 'John',
-      lastName: 'Doe',
+      name: 'John',
       email: 'john@example.com',
       password: 'password123',
       role: 'Guest',
@@ -63,7 +61,7 @@ describe('UserService', () => {
 
     service.createUser(mockUser).subscribe((user) => {
       expect(user).toBeTruthy();
-      expect(user.firstName).toBe(mockUser.firstName);
+      expect(user.name).toBe(mockUser.name);
     });
 
     const req = httpMock.expectOne(`${environment.apiUrl}/users`);

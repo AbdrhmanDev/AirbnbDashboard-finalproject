@@ -65,7 +65,7 @@ export class UserService {
   // Create new user
   createUser(user: CreateUserDTO): Observable<UserResponse> {
     return this.http
-    .post<ApiResponse<UserResponse>>(`${this.apiUrl}/register`, user)
+      .post<ApiResponse<UserResponse>>(`${this.apiUrl}/register`, user)
       .pipe(
         map((response) => {
           if (!response.user) {
@@ -108,9 +108,9 @@ export class UserService {
   }
 
   // Update user profile image
-  updateProfileImage(id: string, imageFile: File): Observable<UserResponse> {
+  updateavatar(id: string, imageFile: File): Observable<UserResponse> {
     const formData = new FormData();
-    formData.append('profileImage', imageFile);
+    formData.append('avatar', imageFile);
     return this.http
       .put<ApiResponse<UserResponse>>(
         `${this.apiUrl}/${id}/profile-image`,

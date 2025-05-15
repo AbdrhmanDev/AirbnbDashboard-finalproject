@@ -55,15 +55,7 @@ export class ProfileComponent implements OnInit {
     private fb: FormBuilder
   ) {
     this.profileForm = this.fb.group({
-      firstName: [
-        '',
-        [
-          Validators.required,
-          Validators.minLength(2),
-          Validators.maxLength(50),
-        ],
-      ],
-      lastName: [
+      name: [
         '',
         [
           Validators.required,
@@ -96,8 +88,7 @@ export class ProfileComponent implements OnInit {
             next: (user) => {
               this.user = user;
               this.profileForm.patchValue({
-                firstName: user.firstName,
-                lastName: user.lastName,
+                name: user.name,
                 email: user.email,
                 phone: user.phone || '',
                 address: {
@@ -105,7 +96,7 @@ export class ProfileComponent implements OnInit {
                   city: user.address?.city || '',
                 },
               });
-              this.imagePreview = user.profileImage || null;
+              this.imagePreview = user.avatar || null;
               this.isLoading = false;
             },
             error: (error) => {
@@ -157,8 +148,7 @@ export class ProfileComponent implements OnInit {
   onSubmit(): void {
     if (this.profileForm.valid && this.user) {
       const formData = new FormData();
-      formData.append('firstName', this.profileForm.get('firstName')?.value);
-      formData.append('lastName', this.profileForm.get('lastName')?.value);
+      formData.append('name', this.profileForm.get('name')?.value);
       formData.append('email', this.profileForm.get('email')?.value);
       formData.append('phone', this.profileForm.get('phone')?.value);
       formData.append(
@@ -167,15 +157,14 @@ export class ProfileComponent implements OnInit {
       );
 
       if (this.selectedFile) {
-        formData.append('profileImage', this.selectedFile);
+        formData.append('avatar', this.selectedFile);
       }
 
       const userData = {
-        firstName: this.profileForm.get('firstName')?.value,
-        lastName: this.profileForm.get('lastName')?.value,
+        name: this.profileForm.get('name')?.value,
         email: this.profileForm.get('email')?.value,
         phone: this.profileForm.get('phone')?.value,
-        address: this.profileForm.get('address')?.value
+        address: this.profileForm.get('address')?.value,
       };
 
       this.userService.updateUser(this.user?._id || '', userData).subscribe({

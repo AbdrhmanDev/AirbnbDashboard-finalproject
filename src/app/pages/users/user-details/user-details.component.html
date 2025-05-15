@@ -17,17 +17,13 @@
     <mat-card *ngIf="!isLoading && user" class="user-card mat-elevation-z2">
       <div class="user-header">
         <div class="profile-image-container">
-          <img
-            [src]="user.profileImage || 'assets/images/default-avatar.png'"
-            [alt]="user.firstName + ' ' + user.lastName"
-            class="profile-image"
-          />
+          <img [src]="user.avatar || 'assets/images/default-avatar.png'" [alt]="user.name" class="profile-image" />
         </div>
         <div class="user-title">
-          <h2>{{ user.firstName }} {{ user.lastName }}</h2>
+          <h2>{{ user.name }} </h2>
           <span class="role-badge" [class]="user.role.toLowerCase()">{{
             user.role
-          }}</span>
+            }}</span>
         </div>
       </div>
 

@@ -305,7 +305,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
   }
 
   public get userName(): string {
-    return this.user ? `${this.user.firstName} ${this.user.lastName}` : 'Guest';
+    return this.user ? `${this.user.name} ` : 'Guest';
   }
 
   public get userRole(): string {
@@ -314,7 +314,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
   }
 
   public get userAvatar(): string {
-    return this.user?.profileImage || 'assets/images/default-avatar.png';
+    return this.user?.avatar || 'assets/images/default-avatar.png';
   }
 
   public navigateToProfile(): void {

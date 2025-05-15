@@ -133,12 +133,12 @@ export class BookingDetailsComponent implements OnInit {
 
   getUserFullName(user: User | string): string {
     if (typeof user === 'string') return 'Loading...';
-    return `${user.firstName} ${user.lastName}`;
+    return `${user.name} `;
   }
 
-  getUserProfileImage(user: User | string): string {
+  getUseravatar(user: User | string): string {
     if (typeof user === 'string') return 'assets/default-avatar.png';
-    return user.profileImage || 'assets/default-avatar.png';
+    return user.avatar || 'assets/default-avatar.png';
   }
 
   getUserEmail(user: User | string): string {

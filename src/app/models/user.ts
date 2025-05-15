@@ -1,11 +1,10 @@
 export interface User {
   _id?: string;
-  firstName: string;
-  lastName: string;
+  name: string;
   email: string;
   password?: string;
   phone?: string;
-  profileImage?: string;
+  avatar?: string;
   dateOfBirth: Date;
   gender?: 'Male' | 'Female';
   address: {
