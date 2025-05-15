@@ -19,7 +19,10 @@ import { BookingService } from '../../services/booking.service';
 import { UserResponse } from '../../models/user';
 import { Subscription } from 'rxjs';
 import { FormsModule } from '@angular/forms';
-
+import { RevenueService } from '../../services/revenue.service';
+interface RevenueResponse {
+  totalRevenue: number;
+}
 @Component({
   selector: 'app-navbar',
   standalone: true,
@@ -41,7 +44,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
   // UI state properties
   public isUserMenuOpen = false;
   public searchQuery = '';
-
+  public getRevenue = 0;
   constructor(
     private notificationService: NotificationService,
     private loginService: LoginService,
@@ -49,9 +52,9 @@ export class NavbarComponent implements OnInit, OnDestroy {
     private userStateService: UserStateService,
     private bookingService: BookingService,
     private router: Router,
-    private elementRef: ElementRef
+    private elementRef: ElementRef,
+    private revenueService: RevenueService
   ) {}
-
   ngOnInit() {
     // Load initial user state
     this.user = this.userStateService.getUser();
@@ -257,6 +260,15 @@ export class NavbarComponent implements OnInit, OnDestroy {
             error: (error) => {
               console.error('Error loading user:', error);
               this.logout();
+            },
+          });
+
+          this.revenueService.getRevenue().subscribe({
+            next: (response: RevenueResponse) => {
+              this.getRevenue = response.totalRevenue;
+            },
+            error: (error: any) => {
+              console.error('Error loading revenue:', error);
             },
           });
         }

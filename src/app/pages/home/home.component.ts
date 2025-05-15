@@ -11,6 +11,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 
 import { BookingService } from '../../services/booking.service';
 import { Booking } from '../../models/booking';
+import { RevenueService } from '../../services/revenue.service';
 
 interface Property {
   propertyId: string | { _id: string; title: string };
@@ -18,7 +19,9 @@ interface Property {
   status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
   totalPrice: number;
 }
-
+interface RevenueResponse {
+  totalRevenue: number;
+}
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
@@ -48,6 +51,7 @@ export class HomeComponent implements OnInit {
     cancelled: 0,
     revenue: 0,
   };
+  public getRevenue = 0;
 
   displayedColumns: string[] = [
     'bookingId',
@@ -58,7 +62,10 @@ export class HomeComponent implements OnInit {
     'amount',
   ];
 
-  constructor(private bookingService: BookingService) {}
+  constructor(
+    private bookingService: BookingService,
+    private revenueService: RevenueService
+  ) {}
 
   ngOnInit() {
     this.loadDashboardData();
@@ -79,6 +86,14 @@ export class HomeComponent implements OnInit {
           stats: this.bookingStats,
           popularProperties: this.popularProperties,
           recentActivities: this.recentActivities,
+        });
+        this.revenueService.getRevenue().subscribe({
+          next: (response: RevenueResponse) => {
+            this.getRevenue = response.totalRevenue;
+          },
+          error: (error: any) => {
+            console.error('Error loading revenue:', error);
+          },
         });
       },
       error: (error) => {

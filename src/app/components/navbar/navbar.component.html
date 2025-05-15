@@ -116,11 +116,11 @@
           </div>
           <div class="balance-info">
             <span class="balance-label">Revenue</span>
-            <span class="balance-amount">${{ totalRevenue | number : "1.0-0" }}</span>
+            <span class="balance-amount">${{ getRevenue }}</span>
           </div>
         </div>
         <div class="balance-chart">
-          <div class="chart-bar" [style.width.%]="(totalRevenue / 10000) * 100"></div>
+          <div class="chart-bar" [style.width.%]="(getRevenue) * 100"></div>
         </div>
       </div>
 
