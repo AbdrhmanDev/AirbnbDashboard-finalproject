@@ -6,6 +6,7 @@ import {
 import { Injectable } from '@angular/core';
 import { catchError, Observable, throwError } from 'rxjs';
 import { Hotel } from '../models/hotel';
+import { Hotel2 } from '../models/hoteln';
 
 @Injectable({
   providedIn: 'root',
@@ -37,8 +38,8 @@ export class HotelsService {
       headers: this.getAuthHeaders(),
     });
   }
-  createHotel(hotel: Hotel): Observable<Hotel> {
-    return this.http.post<Hotel>(this.apiUrl, hotel, {
+  createHotel(hotel: Hotel2): Observable<Hotel2> {
+    return this.http.post<Hotel2>(this.apiUrl, hotel, {
       headers: this.getAuthHeaders(),
     });
   }

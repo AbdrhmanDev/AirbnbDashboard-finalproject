@@ -1,0 +1,15 @@
+<div class="advantages-list">
+  <div *ngFor="let advantage of formArray.controls; let i = index">
+    <mat-form-field appearance="outline">
+      <input matInput [formControl]="getControl(i)" placeholder="Advantage" />
+      <button mat-icon-button color="warn" (click)="removeAdvantage(i)" type="button">
+        <mat-icon>delete</mat-icon>
+      </button>
+    </mat-form-field>
+  </div>
+</div>
+
+<button type="button" mat-stroked-button (click)="addAdvantage()">
+  <mat-icon>add</mat-icon>
+  Add Advantage
+</button>

@@ -48,12 +48,12 @@ export class LoginComponent implements OnInit {
 
   login(): void {
     if (this.loginForm.valid) {
-
       const { email, password } = this.loginForm.value;
 
       this.loginServ.login(email, password).subscribe({
         next: (res) => {
-          console.log('Login response:', res);
+          console.log('Login response:>>>>>>>>>>>>>>>>>>>>', res);
+          console.log('Login response:>>>>>>>>>>>>>>>>>>>>', res.user);
           if (res.token) {
             this.loginServ.saveToken(res.token);
             // Save user data if available
@@ -62,15 +62,11 @@ export class LoginComponent implements OnInit {
             }
             this.router.navigate(['/home']);
           }
-
         },
         error: (error) => {
           console.error('Login error:', error);
           alert('Login failed. Please check your credentials.');
         },
-
-
-
       });
     } else {
       alert('Please enter valid email and password.');

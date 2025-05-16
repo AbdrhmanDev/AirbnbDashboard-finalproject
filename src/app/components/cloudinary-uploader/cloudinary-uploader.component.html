@@ -1,0 +1,14 @@
+<div class="uploader">
+  <input
+    type="file"
+    (change)="onFileChange($event)"
+    multiple
+    accept="image/*"
+  />
+  <div class="image-list" *ngIf="images.length > 0">
+    <div class="image-preview" *ngFor="let img of images; let i = index">
+      <img [src]="img" alt="Uploaded Image" />
+      <button (click)="removeImage(i)">Remove</button>
+    </div>
+  </div>
+</div>

@@ -75,18 +75,18 @@ export class HomeComponent implements OnInit {
     this.isLoading = true;
     this.bookingService.getBookings().subscribe({
       next: (bookings) => {
-        console.log('Raw bookings data:', JSON.stringify(bookings, null, 2));
+        // console.log('Raw bookings data:', JSON.stringify(bookings, null, 2));
         this.recentBookings = bookings.slice(0, 5);
         this.calculateStats(bookings);
         this.generatePopularProperties(bookings);
         this.generateRecentActivities(bookings);
         this.isLoading = false;
-        console.log('Processed bookings:', {
-          recentBookings: this.recentBookings,
-          stats: this.bookingStats,
-          popularProperties: this.popularProperties,
-          recentActivities: this.recentActivities,
-        });
+        // console.log('Processed bookings:', {
+        //   recentBookings: this.recentBookings,
+        //   stats: this.bookingStats,
+        //   popularProperties: this.popularProperties,
+        //   recentActivities: this.recentActivities,
+        // });
         this.revenueService.getRevenue().subscribe({
           next: (response: RevenueResponse) => {
             this.getRevenue = response.totalRevenue;

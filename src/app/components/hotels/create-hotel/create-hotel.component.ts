@@ -5,6 +5,8 @@ import {
   FormGroup,
   Validators,
   ReactiveFormsModule,
+  FormArray,
+  FormControl,
 } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -17,6 +19,8 @@ import { Router } from '@angular/router';
 import { HotelsService } from '../../../services/hotels.service';
 import { CategoryService } from '../../../services/category.service';
 import { Category } from '../../../models/category';
+import { AdvantagesFormComponent } from './advantages-form/advantages-form.component';
+import { CloudinaryUploaderComponent } from '../../cloudinary-uploader/cloudinary-uploader.component';
 
 @Component({
   selector: 'app-create-hotel',
@@ -30,6 +34,8 @@ import { Category } from '../../../models/category';
     MatSelectModule,
     MatButtonModule,
     MatIconModule,
+    AdvantagesFormComponent,
+    CloudinaryUploaderComponent,
   ],
   templateUrl: './create-hotel.component.html',
   styleUrls: ['./create-hotel.component.css'],
@@ -72,19 +78,107 @@ export class CreateHotelComponent implements OnInit {
 
   private initForm(): void {
     this.hotelForm = this.fb.group({
-      title: ['', [Validators.required, Validators.minLength(3)]],
-      description: ['', [Validators.required, Validators.minLength(10)]],
-      pricePerNight: ['', [Validators.required, Validators.min(0)]],
-      rooms: ['', [Validators.required, Validators.min(1)]],
-      bathrooms: ['', [Validators.required, Validators.min(1)]],
-      path: ['', [Validators.required, Validators.min(1)]],
+      title: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(3),
+          Validators.maxLength(100),
+        ],
+      ],
+      description: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(10),
+          Validators.maxLength(500),
+        ],
+      ],
+      pricePerNight: [
+        0,
+        [Validators.required, Validators.min(1), Validators.max(10000)],
+      ],
+      aboutThisSpace: [
+        'this is  test about this space ',
+        [Validators.minLength(10), Validators.maxLength(1000)],
+      ],
+
+      // العنوان
+      address: this.fb.group({
+        fullAddress: ['', [Validators.minLength(5), Validators.maxLength(200)]],
+        country: [
+          '',
+          [
+            Validators.required,
+            Validators.minLength(2),
+            Validators.maxLength(50),
+          ],
+        ],
+        city: [
+          '',
+          [
+            Validators.required,
+            Validators.minLength(2),
+            Validators.maxLength(50),
+          ],
+        ],
+        coordinates: this.fb.array([
+          this.fb.control(null), // Longitude
+          this.fb.control(null), // Latitude
+        ]),
+      }),
+
+      images: this.fb.array([], Validators.required),
+
+      // التفاصيل الخاصة بالمكان
+      spaceDetails: this.fb.group({
+        bedrooms: [
+          1,
+          [Validators.required, Validators.min(1), Validators.max(5)],
+        ],
+        path: [1, [Validators.required, Validators.min(1), Validators.max(5)]],
+        beds: [1, [Validators.required, Validators.min(1), Validators.max(10)]],
+        area: [10, [Validators.required, Validators.min(10)]],
+        rooms: [
+          1,
+          [Validators.required, Validators.min(1), Validators.max(10)],
+        ],
+      }),
+
+      // السعة الاستيعابية
+      capacity: this.fb.group({
+        adults: [
+          1,
+          [Validators.required, Validators.min(1), Validators.max(10)],
+        ],
+        children: [
+          0,
+          [Validators.required, Validators.min(0), Validators.max(5)],
+        ],
+        infants: [
+          0,
+          [Validators.required, Validators.min(0), Validators.max(3)],
+        ],
+      }),
+
+      petPolicy: ['not_allowed', Validators.required],
+      view: ['none', Validators.required],
+      advantages: this.fb.array([], Validators.required),
+      cancellationPolicy: ['flexible', Validators.required],
+      propertyType: ['apartment', Validators.required],
+
+      safetyFeatures: this.fb.group({
+        smokeDetector: [false],
+        carbonMonoxideDetector: [false],
+        firstAidKit: [false],
+        fireExtinguisher: [false],
+      }),
+
+      houseRules: this.fb.array([]),
+
       status: ['available', Validators.required],
       categoryId: ['', Validators.required],
-      address: this.fb.group({
-        country: ['', Validators.required],
-        city: ['', Validators.required],
-      }),
-      images: [[], Validators.required],
+      rating: [0, [Validators.min(0), Validators.max(5)]],
     });
   }
 
@@ -120,18 +214,21 @@ export class CreateHotelComponent implements OnInit {
       images: this.base64Images,
     });
   }
+  onImageUpload(imageUrl: string) {
+    this.images.push(this.fb.control(imageUrl)); // إضافة الصورة للـ FormArray
+  }
+  get images(): FormArray {
+    return this.hotelForm.get('images') as FormArray;
+  }
 
   onSubmit(): void {
-    if (this.hotelForm.valid && this.base64Images.length > 0) {
+    if (true) {
+      // this.hotelForm.valid && this.base64Images.length > 0
       const formValue = this.hotelForm.value;
 
       // Create the final form data object
-      const hotelData = {
-        ...formValue,
-        images: this.base64Images,
-      };
 
-      this.hotelsService.createHotel(hotelData).subscribe({
+      this.hotelsService.createHotel(formValue).subscribe({
         next: (response) => {
           this.snackBar.open('Hotel created successfully!', 'Close', {
             duration: 3000,
@@ -149,6 +246,7 @@ export class CreateHotelComponent implements OnInit {
             }
           );
           console.error('Error creating hotel:', error);
+          console.log(this.hotelForm.value);
         },
       });
     } else {
@@ -177,5 +275,16 @@ export class CreateHotelComponent implements OnInit {
       return `Value must be greater than ${control.errors?.['min'].min}`;
     }
     return '';
+  }
+  get advantagesFormArray(): FormArray {
+    return this.hotelForm.get('advantages') as FormArray;
+  }
+  getFormControl(controlName: string): FormControl {
+    return this.hotelForm.get(controlName) as FormControl;
+  }
+  setInitialValues(): void {
+    this.hotelForm.patchValue({
+      status: 'available',
+    });
   }
 }

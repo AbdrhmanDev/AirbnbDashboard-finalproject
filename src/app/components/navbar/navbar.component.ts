@@ -58,6 +58,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
   ngOnInit() {
     // Load initial user state
     this.user = this.userStateService.getUser();
+    console.log('user >>>>>>>>>>>>>>>>>>>>', this.user);
     if (this.user?._id) {
       this.loadTotalRevenue(this.user._id);
       this.loadRecentActivities();
