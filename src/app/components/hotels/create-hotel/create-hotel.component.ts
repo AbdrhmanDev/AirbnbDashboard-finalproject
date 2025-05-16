@@ -21,6 +21,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { Router } from '@angular/router';
 import { HotelsService } from '../../../services/hotels.service';
 import { CategoryService } from '../../../services/category.service';
@@ -42,6 +43,7 @@ import 'leaflet/dist/leaflet.css';
     MatSelectModule,
     MatButtonModule,
     MatIconModule,
+    MatCheckboxModule,
     AdvantagesFormComponent,
     CloudinaryUploaderComponent,
   ],
@@ -117,11 +119,11 @@ export class CreateHotelComponent implements OnInit, AfterViewInit {
         [Validators.required, Validators.min(1), Validators.max(10000)],
       ],
       aboutThisSpace: [
-        'this is  test about this space ',
+        '',
         [Validators.minLength(10), Validators.maxLength(1000)],
       ],
 
-      // العنوان
+      // Address
       address: this.fb.group({
         fullAddress: ['', [Validators.minLength(5), Validators.maxLength(200)]],
         country: [
@@ -148,7 +150,7 @@ export class CreateHotelComponent implements OnInit, AfterViewInit {
 
       images: this.fb.array([], Validators.required),
 
-      // التفاصيل الخاصة بالمكان
+      // Space Details
       spaceDetails: this.fb.group({
         bedrooms: [
           1,
@@ -163,7 +165,7 @@ export class CreateHotelComponent implements OnInit, AfterViewInit {
         ],
       }),
 
-      // السعة الاستيعابية
+      // Capacity
       capacity: this.fb.group({
         adults: [
           1,
