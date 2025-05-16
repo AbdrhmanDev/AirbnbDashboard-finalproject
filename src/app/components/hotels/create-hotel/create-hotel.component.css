@@ -149,3 +149,30 @@ button[color="primary"] {
   background-color: var(--airbnb-red) !important;
   color: white !important;
 }
+
+.map-container {
+  margin: 20px 0;
+}
+
+.map {
+  height: 400px;
+  width: 100%;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+.map-hint {
+  display: block;
+  margin-top: 8px;
+  color: #666;
+  font-size: 12px;
+}
+
+/* Fix for Leaflet marker icons */
+:host ::ng-deep .leaflet-default-icon-path {
+  background-image: url(https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png);
+}
+
+:host ::ng-deep .leaflet-default-shadow-path {
+  background-image: url(https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png);
+}

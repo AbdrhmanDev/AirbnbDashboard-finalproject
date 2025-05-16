@@ -1,4 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  AfterViewInit,
+  ViewChild,
+  ElementRef,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -21,6 +27,8 @@ import { CategoryService } from '../../../services/category.service';
 import { Category } from '../../../models/category';
 import { AdvantagesFormComponent } from './advantages-form/advantages-form.component';
 import { CloudinaryUploaderComponent } from '../../cloudinary-uploader/cloudinary-uploader.component';
+import * as L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 
 @Component({
   selector: 'app-create-hotel',
@@ -40,7 +48,13 @@ import { CloudinaryUploaderComponent } from '../../cloudinary-uploader/cloudinar
   templateUrl: './create-hotel.component.html',
   styleUrls: ['./create-hotel.component.css'],
 })
-export class CreateHotelComponent implements OnInit {
+export class CreateHotelComponent implements OnInit, AfterViewInit {
+  @ViewChild('map') mapContainer!: ElementRef;
+  private map!: L.Map;
+  private marker!: L.Marker;
+  private defaultLat = 30.0444; // Default latitude (Cairo)
+  private defaultLng = 31.2357; // Default longitude (Cairo)
+
   hotelForm!: FormGroup;
   imageFiles: File[] = [];
   base64Images: string[] = [];
@@ -58,6 +72,10 @@ export class CreateHotelComponent implements OnInit {
   ngOnInit(): void {
     this.initForm();
     this.loadCategories();
+  }
+
+  ngAfterViewInit() {
+    this.initMap();
   }
 
   private loadCategories(): void {
@@ -285,6 +303,37 @@ export class CreateHotelComponent implements OnInit {
   setInitialValues(): void {
     this.hotelForm.patchValue({
       status: 'available',
+    });
+  }
+
+  private initMap() {
+    // Initialize the map
+    this.map = L.map(this.mapContainer.nativeElement).setView(
+      [this.defaultLat, this.defaultLng],
+      13
+    );
+
+    // Add the tile layer (OpenStreetMap)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors',
+    }).addTo(this.map);
+
+    // Add click event to the map
+    this.map.on('click', (e: L.LeafletMouseEvent) => {
+      const { lat, lng } = e.latlng;
+
+      // Update marker position
+      if (this.marker) {
+        this.marker.setLatLng([lat, lng]);
+      } else {
+        this.marker = L.marker([lat, lng]).addTo(this.map);
+      }
+
+      // Update form values
+      const coordinates = this.hotelForm.get(
+        'address.coordinates'
+      ) as FormArray;
+      coordinates.setValue([lng, lat]);
     });
   }
 }

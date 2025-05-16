@@ -12,11 +12,7 @@
 
           <mat-form-field appearance="outline">
             <mat-label>Hotel Name</mat-label>
-            <input
-              matInput
-              formControlName="title"
-              placeholder="Enter hotel name"
-            />
+            <input matInput formControlName="title" placeholder="Enter hotel name" />
             <mat-error *ngIf="hotelForm.get('title')?.invalid">
               {{ getErrorMessage("title") }}
             </mat-error>
@@ -24,12 +20,7 @@
 
           <mat-form-field appearance="outline">
             <mat-label>Description</mat-label>
-            <textarea
-              matInput
-              formControlName="description"
-              rows="4"
-              placeholder="Enter hotel description"
-            ></textarea>
+            <textarea matInput formControlName="description" rows="4" placeholder="Enter hotel description"></textarea>
             <mat-error *ngIf="hotelForm.get('description')?.invalid">
               {{ getErrorMessage("description") }}
             </mat-error>
@@ -42,12 +33,7 @@
 
           <mat-form-field appearance="outline">
             <mat-label>Price per Night</mat-label>
-            <input
-              matInput
-              type="number"
-              formControlName="pricePerNight"
-              placeholder="Enter price"
-            />
+            <input matInput type="number" formControlName="pricePerNight" placeholder="Enter price" />
             <mat-error *ngIf="hotelForm.get('pricePerNight')?.invalid">
               {{ getErrorMessage("pricePerNight") }}
             </mat-error>
@@ -57,9 +43,7 @@
             <mat-form-field appearance="outline">
               <mat-label>Bedrooms</mat-label>
               <input matInput type="number" formControlName="bedrooms" />
-              <mat-error
-                *ngIf="hotelForm.get('spaceDetails.bedrooms')?.invalid"
-              >
+              <mat-error *ngIf="hotelForm.get('spaceDetails.bedrooms')?.invalid">
                 {{ getErrorMessage("spaceDetails.bedrooms") }}
               </mat-error>
             </mat-form-field>
@@ -171,6 +155,13 @@
               </mat-error>
             </mat-form-field>
           </div>
+
+          <!-- Map Container -->
+          <div class="map-container">
+            <h4>Select Location on Map</h4>
+            <div #map class="map"></div>
+            <small class="map-hint">Click on the map to set the location</small>
+          </div>
         </div>
 
         <!-- Images -->
@@ -216,9 +207,7 @@
               </div>
             </div>
           </div> -->
-          <app-cloudinary-uploader
-            (imageUploaded)="onImageUpload($event)"
-          ></app-cloudinary-uploader>
+          <app-cloudinary-uploader (imageUploaded)="onImageUpload($event)"></app-cloudinary-uploader>
 
           <!-- عرض الصور من الـ FormArray -->
           <div *ngFor="let image of images.controls; let i = index">
@@ -232,35 +221,25 @@
         <!-- Amenities -->
         <div class="form-section">
           <h3>Advantages</h3>
-          <app-advantages-form
-            [formArray]="advantagesFormArray"
-          ></app-advantages-form>
+          <app-advantages-form [formArray]="advantagesFormArray"></app-advantages-form>
         </div>
 
         <!-- Safety Features -->
         <div class="form-section" formGroupName="safetyFeatures">
           <h3>Safety Features</h3>
           <div class="checkbox-group">
-            <mat-checkbox
-              [formControl]="getFormControl('safetyFeatures.smokeDetector')"
-            >
+            <mat-checkbox [formControl]="getFormControl('safetyFeatures.smokeDetector')">
               Smoke Detector
             </mat-checkbox>
-            <mat-checkbox
-              [formControl]="
+            <mat-checkbox [formControl]="
                 getFormControl('safetyFeatures.carbonMonoxideDetector')
-              "
-            >
+              ">
               Carbon Monoxide Detector
             </mat-checkbox>
-            <mat-checkbox
-              [formControl]="getFormControl('safetyFeatures.firstAidKit')"
-            >
+            <mat-checkbox [formControl]="getFormControl('safetyFeatures.firstAidKit')">
               First Aid Kit
             </mat-checkbox>
-            <mat-checkbox
-              [formControl]="getFormControl('safetyFeatures.fireExtinguisher')"
-            >
+            <mat-checkbox [formControl]="getFormControl('safetyFeatures.fireExtinguisher')">
               Fire Extinguisher
             </mat-checkbox>
           </div>
@@ -270,16 +249,11 @@
         <mat-form-field appearance="outline">
           <mat-label>Category</mat-label>
           <mat-select formControlName="categoryId" required>
-            <mat-option
-              *ngFor="let category of categories"
-              [value]="category._id"
-            >
+            <mat-option *ngFor="let category of categories" [value]="category._id">
               {{ category.name }}
             </mat-option>
           </mat-select>
-          <mat-error *ngIf="hotelForm.get('categoryId')?.invalid"
-            >Please select a category</mat-error
-          >
+          <mat-error *ngIf="hotelForm.get('categoryId')?.invalid">Please select a category</mat-error>
         </mat-form-field>
 
         <!-- Submit Button -->
