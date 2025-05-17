@@ -1,11 +1,16 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PaymentService } from '../../services/payment.service';
 import { Payment, PaymentSummary } from '../../models/payment';
 import { UserService } from '../../services/user.service';
 import { BookingService } from '../../services/booking.service';
 import { HotelsService } from '../../services/hotels.service';
-
+import { UserStateService } from '../../services/user-state.service';
+import { Subscription } from 'rxjs';
+import { RevenueService } from '../../services/revenue.service';
+interface RevenueResponse {
+  totalRevenue: number;
+}
 @Component({
   selector: 'app-analytics',
   standalone: true,
@@ -13,7 +18,9 @@ import { HotelsService } from '../../services/hotels.service';
   templateUrl: './analytics.component.html',
   styleUrls: ['./analytics.component.scss'],
 })
-export class AnalyticsComponent implements OnInit {
+export class AnalyticsComponent implements OnInit, OnDestroy {
+  isAdmin = false;
+  private userSubscription: Subscription | undefined;
   totalUsers = 0;
   totalBookings = 0;
   totalRevenue = 0;
@@ -27,22 +34,36 @@ export class AnalyticsComponent implements OnInit {
   Math = Math;
   isLoading = true;
   error: string | null = null;
+  public getRevenue = 0;
 
   constructor(
     private paymentService: PaymentService,
     private userService: UserService,
     private bookingService: BookingService,
-    private hotelService: HotelsService
-  ) {}
+    private hotelService: HotelsService,
+    private userStateService: UserStateService,
+    private revenueService: RevenueService
+
+  ) { }
 
   ngOnInit() {
+    this.userSubscription = this.userStateService.user$.subscribe(user => {
+      this.isAdmin = user?.role === 'Admin';
+    });
     this.loadAnalyticsData();
   }
 
   private loadAnalyticsData() {
     this.isLoading = true;
     this.error = null;
-
+    this.revenueService.getRevenue().subscribe({
+      next: (response: RevenueResponse) => {
+        this.getRevenue = response.totalRevenue;
+      },
+      error: (error: any) => {
+        console.error('Error loading revenue:', error);
+      },
+    });
     // Load payment data
     this.paymentService.getPayments().subscribe({
       next: (payments) => {
@@ -131,5 +152,11 @@ export class AnalyticsComponent implements OnInit {
 
   refreshData() {
     this.loadAnalyticsData();
+  }
+
+  ngOnDestroy(): void {
+    if (this.userSubscription) {
+      this.userSubscription.unsubscribe();
+    }
   }
 }

@@ -1,7 +1,7 @@
 <div class="analytics-container">
   <!-- Statistics Cards -->
   <div class="stats-grid">
-    <div class="stat-card">
+    <div class="stat-card" *ngIf="isAdmin">
       <div class="stat-icon">
         <span class="material-icons">people</span>
       </div>
@@ -50,7 +50,7 @@
       </div>
       <div class="stat-details">
         <h3>Total Revenue</h3>
-        <div class="stat-value">{{ totalRevenue | currency : "$" }}</div>
+        <div class="stat-value">{{ getRevenue | currency : "$" }}</div>
         <div
           class="stat-change"
           [ngClass]="{
