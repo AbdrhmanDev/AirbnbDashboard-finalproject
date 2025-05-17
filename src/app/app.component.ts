@@ -4,6 +4,7 @@ import { Router, RouterModule } from '@angular/router';
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { AsideComponent } from './components/aside/aside.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
+import { ChatComponent } from "./chat/chat.component";
 
 @Component({
   selector: 'app-root',
@@ -16,7 +17,8 @@ import { DashboardComponent } from './components/dashboard/dashboard.component';
     NavbarComponent,
     AsideComponent,
     DashboardComponent,
-  ],
+    ChatComponent
+],
 })
 export class AppComponent {
   title = 'your-app-name';
