@@ -25,6 +25,7 @@ import { MatError } from '@angular/material/form-field';
 import { FormsModule } from '@angular/forms';
 import { DeleteConfirmationComponent } from './delete-confirmation/delete-confirmation.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { User } from '../../models/user';
 
 @Component({
   selector: 'app-hotels',
@@ -51,6 +52,7 @@ export class HotelsComponent implements OnInit {
   hotels$!: Observable<Hotel2[]>;
   errorMessage!: string;
   isLoading = true;
+  userRole: 'Guest' | 'Host' | 'Admin' | null = null;
 
   // Search and filter state
   searchQuery = '';
@@ -78,6 +80,19 @@ export class HotelsComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadHotels();
+    this.loadUserRole();
+  }
+
+  private loadUserRole(): void {
+    const userData = localStorage.getItem('user_data');
+    if (userData) {
+      const user: User = JSON.parse(userData);
+      this.userRole = user.role;
+    }
+  }
+
+  canManageHotels(): boolean {
+    return this.userRole === 'Host';
   }
 
   private loadHotels(): void {

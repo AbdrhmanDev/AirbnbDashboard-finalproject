@@ -5,7 +5,7 @@
       <h1>Hotel Management</h1>
       <p>{{ (hotels$ | async)?.length || 0 }} hotels listed</p>
     </div>
-    <button class="add-hotel-btn" routerLink="/add-hotel" mat-raised-button color="primary">
+    <button class="add-hotel-btn" routerLink="/add-hotel" mat-raised-button color="primary" *ngIf="canManageHotels()">
       <mat-icon>add</mat-icon>
       Add New Hotel
     </button>
@@ -84,11 +84,11 @@
           <mat-icon>visibility</mat-icon>
           View
         </button>
-        <button mat-button color="accent" (click)="onUpdate(hotel._id)">
+        <button mat-button color="accent" (click)="onUpdate(hotel._id)" *ngIf="canManageHotels()">
           <mat-icon>edit</mat-icon>
           Edit
         </button>
-        <button mat-button color="warn" (click)="onDelete(hotel)">
+        <button mat-button color="warn" (click)="onDelete(hotel)" *ngIf="canManageHotels()">
           <mat-icon>delete</mat-icon>
           Delete
         </button>
