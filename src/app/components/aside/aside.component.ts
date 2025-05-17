@@ -1,6 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
+import { Subscription } from 'rxjs';
+import { UserStateService } from '../../services/user-state.service';
 
 @Component({
   selector: 'app-aside',
@@ -9,23 +11,33 @@ import { Router, RouterModule } from '@angular/router';
   standalone: true,
   imports: [CommonModule, RouterModule],
 })
-export class AsideComponent implements OnInit {
+export class AsideComponent implements OnInit, OnDestroy {
   currentRoute: string = 'home';
 userRole: string | null = null;
-  constructor(private router: Router) {
+private userSubscription: Subscription | undefined;
+  constructor(private router: Router, private userStateService: UserStateService) {
     this.router.events.subscribe(() => {
       this.currentRoute = this.router.url.split('/')[1] || 'home';
     });
   }
 ngOnInit(): void {
     this.userRole = this.getUserRole();
+    this.userSubscription = this.userStateService.user$.subscribe(user => {
+      this.userRole = user?.role || null;
+    });
+  }
+
+  ngOnDestroy(): void {
+    if (this.userSubscription) {
+      this.userSubscription.unsubscribe();
+    }
   }
   navigate(route: string) {
     this.currentRoute = route;
     this.router.navigate([route]);
   }
   getUserRole(): string | null {
-    const userData = localStorage.getItem('user_data');
-    return userData ? JSON.parse(userData).role : null;
+    const user = this.userStateService.getUser();
+    return user?.role || null;
   }
 }
