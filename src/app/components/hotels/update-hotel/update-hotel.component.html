@@ -1,5 +1,5 @@
-<div class="update-hotel-container">
-  <mat-card class="form-card">
+<div class="container">
+  <mat-card class="hotel-form-card">
     <mat-card-header>
       <mat-card-title>Update Hotel</mat-card-title>
     </mat-card-header>
@@ -9,199 +9,258 @@
         <!-- Basic Information -->
         <div class="form-section">
           <h3>Basic Information</h3>
-
-          <mat-form-field appearance="outline">
-            <mat-label>Hotel Name</mat-label>
-            <input
-              matInput
-              formControlName="title"
-              placeholder="Enter hotel name"
-            />
-            <mat-error *ngIf="hotelForm.get('title')?.invalid">
-              {{ getErrorMessage("title") }}
-            </mat-error>
-          </mat-form-field>
-
-          <mat-form-field appearance="outline">
-            <mat-label>Description</mat-label>
-            <textarea
-              matInput
-              formControlName="description"
-              rows="4"
-              placeholder="Enter hotel description"
-            ></textarea>
-            <mat-error *ngIf="hotelForm.get('description')?.invalid">
-              {{ getErrorMessage("description") }}
-            </mat-error>
-          </mat-form-field>
-        </div>
-
-        <!-- Details -->
-        <div class="form-section">
-          <h3>Details</h3>
-
           <div class="form-row">
             <mat-form-field appearance="outline">
+              <mat-label>Title</mat-label>
+              <input matInput formControlName="title" placeholder="Enter hotel title">
+              <mat-error *ngIf="getFormControl('title').hasError('required')">Title is required</mat-error>
+              <mat-error *ngIf="getFormControl('title').hasError('minlength')">Title must be at least 3
+                characters</mat-error>
+              <mat-error *ngIf="getFormControl('title').hasError('maxlength')">Title cannot exceed 100
+                characters</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
               <mat-label>Price per Night</mat-label>
-              <input
-                matInput
-                type="number"
-                formControlName="pricePerNight"
-                placeholder="Enter price"
-              />
-              <mat-error *ngIf="hotelForm.get('pricePerNight')?.invalid">
-                {{ getErrorMessage("pricePerNight") }}
-              </mat-error>
-            </mat-form-field>
-
-            <mat-form-field appearance="outline">
-              <mat-label>Number of Rooms</mat-label>
-              <input
-                matInput
-                type="number"
-                formControlName="rooms"
-                placeholder="Enter number of rooms"
-              />
-              <mat-error *ngIf="hotelForm.get('rooms')?.invalid">
-                {{ getErrorMessage("rooms") }}
-              </mat-error>
-            </mat-form-field>
-
-            <mat-form-field appearance="outline">
-              <mat-label>Number of Bathrooms</mat-label>
-              <input
-                matInput
-                type="number"
-                formControlName="bathrooms"
-                placeholder="Enter number of bathrooms"
-              />
-              <mat-error *ngIf="hotelForm.get('bathrooms')?.invalid">
-                {{ getErrorMessage("bathrooms") }}
-              </mat-error>
-            </mat-form-field>
-
-            <mat-form-field appearance="outline">
-              <mat-label>Pathrooms</mat-label>
-              <input
-                matInput
-                type="number"
-                formControlName="path"
-                placeholder="Enter number of pathrooms"
-              />
-              <mat-error *ngIf="hotelForm.get('path')?.invalid">
-                {{ getErrorMessage("path") }}
-              </mat-error>
+              <input matInput type="number" formControlName="pricePerNight" placeholder="Enter price">
+              <mat-error *ngIf="getFormControl('pricePerNight').hasError('required')">Price is required</mat-error>
+              <mat-error *ngIf="getFormControl('pricePerNight').hasError('min')">Price must be greater than
+                0</mat-error>
             </mat-form-field>
           </div>
 
-          <mat-form-field appearance="outline">
-            <mat-label>Status</mat-label>
-            <mat-select formControlName="status">
-              <mat-option value="available">Available</mat-option>
-              <mat-option value="booked">Booked</mat-option>
-              <mat-option value="maintenance">Maintenance</mat-option>
-            </mat-select>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Description</mat-label>
+            <textarea matInput formControlName="description" rows="4" placeholder="Enter hotel description"></textarea>
+            <mat-error *ngIf="getFormControl('description').hasError('required')">Description is required</mat-error>
+            <mat-error *ngIf="getFormControl('description').hasError('minlength')">Description must be at least 10
+              characters</mat-error>
+            <mat-error *ngIf="getFormControl('description').hasError('maxlength')">Description cannot exceed 500
+              characters</mat-error>
           </mat-form-field>
 
-          <mat-form-field appearance="outline">
-            <mat-label>Category</mat-label>
-            <mat-select formControlName="categoryId" required>
-              <mat-option
-                *ngFor="let category of categories"
-                [value]="category._id"
-              >
-                {{ category.name }}
-              </mat-option>
-            </mat-select>
-            <mat-error *ngIf="hotelForm.get('categoryId')?.invalid">
-              {{ getErrorMessage("categoryId") }}
-            </mat-error>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>About This Space</mat-label>
+            <textarea matInput formControlName="aboutThisSpace" rows="4"
+              placeholder="Enter details about the space"></textarea>
+            <mat-error *ngIf="getFormControl('aboutThisSpace').hasError('minlength')">Description must be at least 10
+              characters</mat-error>
+            <mat-error *ngIf="getFormControl('aboutThisSpace').hasError('maxlength')">Description cannot exceed 1000
+              characters</mat-error>
           </mat-form-field>
         </div>
 
-        <!-- Address -->
+        <!-- Location -->
         <div class="form-section" formGroupName="address">
           <h3>Location</h3>
-
           <div class="form-row">
             <mat-form-field appearance="outline">
               <mat-label>Country</mat-label>
-              <input
-                matInput
-                formControlName="country"
-                placeholder="Enter country"
-              />
-              <mat-error *ngIf="hotelForm.get('address.country')?.invalid">
-                {{ getErrorMessage("address.country") }}
-              </mat-error>
+              <input matInput formControlName="country" placeholder="Enter country">
+              <mat-error *ngIf="getFormControl('address.country').hasError('required')">Country is required</mat-error>
+              <mat-error *ngIf="getFormControl('address.country').hasError('minlength')">Country must be at least 2
+                characters</mat-error>
             </mat-form-field>
 
             <mat-form-field appearance="outline">
               <mat-label>City</mat-label>
-              <input matInput formControlName="city" placeholder="Enter city" />
-              <mat-error *ngIf="hotelForm.get('address.city')?.invalid">
-                {{ getErrorMessage("address.city") }}
-              </mat-error>
+              <input matInput formControlName="city" placeholder="Enter city">
+              <mat-error *ngIf="getFormControl('address.city').hasError('required')">City is required</mat-error>
+              <mat-error *ngIf="getFormControl('address.city').hasError('minlength')">City must be at least 2
+                characters</mat-error>
             </mat-form-field>
+          </div>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Full Address</mat-label>
+            <input matInput formControlName="fullAddress" placeholder="Enter full address">
+            <mat-error *ngIf="getFormControl('address.fullAddress').hasError('minlength')">Address must be at least 5
+              characters</mat-error>
+          </mat-form-field>
+
+          <div class="map-container">
+            <div #map id="map"></div>
+            <p class="map-instructions">Click on the map to set the location coordinates</p>
           </div>
         </div>
 
         <!-- Images -->
         <div class="form-section">
           <h3>Images</h3>
-
-          <div class="image-upload-container">
-            <div class="image-upload">
-              <input
-                type="file"
-                #fileInput
-                hidden
-                multiple
-                accept="image/*"
-                (change)="onImageSelect($event)"
-              />
-              <button
-                type="button"
-                mat-stroked-button
-                color="primary"
-                (click)="fileInput.click()"
-              >
-                <mat-icon>add_photo_alternate</mat-icon>
-                Add Images
+          <app-cloudinary-uploader (imageUploaded)="onImageUpload($event)"></app-cloudinary-uploader>
+          <div class="image-preview-container" *ngIf="images.length > 0">
+            <div class="image-preview" *ngFor="let image of images.controls; let i = index">
+              <img [src]="image.value" alt="Hotel image">
+              <button mat-icon-button color="warn" (click)="removeImage(i)">
+                <mat-icon>close</mat-icon>
               </button>
-            </div>
-
-            <div class="image-previews" *ngIf="previewUrls.length > 0">
-              <div
-                class="image-preview"
-                *ngFor="let url of previewUrls; let i = index"
-              >
-                <img [src]="url" [alt]="'Preview ' + i" />
-                <button
-                  type="button"
-                  mat-icon-button
-                  color="warn"
-                  class="remove-image"
-                  (click)="removeImage(i)"
-                >
-                  <mat-icon>close</mat-icon>
-                </button>
-              </div>
             </div>
           </div>
         </div>
 
-        <!-- Submit Button -->
+        <!-- Space Details -->
+        <div class="form-section" formGroupName="spaceDetails">
+          <h3>Space Details</h3>
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Bedrooms</mat-label>
+              <input matInput type="number" formControlName="bedrooms" min="1" max="5">
+              <mat-error *ngIf="getFormControl('spaceDetails.bedrooms').hasError('required')">Number of bedrooms is
+                required</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Bathrooms</mat-label>
+              <input matInput type="number" formControlName="path" min="1" max="5">
+              <mat-error *ngIf="getFormControl('spaceDetails.path').hasError('required')">Number of bathrooms is
+                required</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Beds</mat-label>
+              <input matInput type="number" formControlName="beds" min="1" max="10">
+              <mat-error *ngIf="getFormControl('spaceDetails.beds').hasError('required')">Number of beds is
+                required</mat-error>
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Area (m²)</mat-label>
+              <input matInput type="number" formControlName="area" min="10">
+              <mat-error *ngIf="getFormControl('spaceDetails.area').hasError('required')">Area is required</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Total Rooms</mat-label>
+              <input matInput type="number" formControlName="rooms" min="1" max="10">
+              <mat-error *ngIf="getFormControl('spaceDetails.rooms').hasError('required')">Number of rooms is
+                required</mat-error>
+            </mat-form-field>
+          </div>
+        </div>
+
+        <!-- Capacity -->
+        <div class="form-section" formGroupName="capacity">
+          <h3>Capacity</h3>
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Adults</mat-label>
+              <input matInput type="number" formControlName="adults" min="1" max="10">
+              <mat-error *ngIf="getFormControl('capacity.adults').hasError('required')">Number of adults is
+                required</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Children</mat-label>
+              <input matInput type="number" formControlName="children" min="0" max="5">
+              <mat-error *ngIf="getFormControl('capacity.children').hasError('required')">Number of children is
+                required</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Infants</mat-label>
+              <input matInput type="number" formControlName="infants" min="0" max="3">
+              <mat-error *ngIf="getFormControl('capacity.infants').hasError('required')">Number of infants is
+                required</mat-error>
+            </mat-form-field>
+          </div>
+        </div>
+
+        <!-- Policies and Features -->
+        <div class="form-section">
+          <h3>Policies and Features</h3>
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Pet Policy</mat-label>
+              <mat-select formControlName="petPolicy">
+                <mat-option value="not_allowed">Not Allowed</mat-option>
+                <mat-option value="allowed">Allowed</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>View</mat-label>
+              <mat-select formControlName="view">
+                <mat-option value="none">None</mat-option>
+                <mat-option value="city">City View</mat-option>
+                <mat-option value="sea">Sea View</mat-option>
+                <mat-option value="mountain">Mountain View</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Cancellation Policy</mat-label>
+              <mat-select formControlName="cancellationPolicy">
+                <mat-option value="flexible">Flexible</mat-option>
+                <mat-option value="moderate">Moderate</mat-option>
+                <mat-option value="strict">Strict</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Property Type</mat-label>
+            <mat-select formControlName="propertyType">
+              <mat-option value="apartment">Apartment</mat-option>
+              <mat-option value="house">House</mat-option>
+              <mat-option value="villa">Villa</mat-option>
+              <mat-option value="hotel">Hotel</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <!-- Safety Features -->
+        <div class="form-section" formGroupName="safetyFeatures">
+          <h3>Safety Features</h3>
+          <div class="checkbox-group">
+            <mat-checkbox formControlName="smokeDetector">Smoke Detector</mat-checkbox>
+            <mat-checkbox formControlName="carbonMonoxideDetector">Carbon Monoxide Detector</mat-checkbox>
+            <mat-checkbox formControlName="firstAidKit">First Aid Kit</mat-checkbox>
+            <mat-checkbox formControlName="fireExtinguisher">Fire Extinguisher</mat-checkbox>
+          </div>
+        </div>
+
+        <!-- Advantages -->
+        <div class="form-section">
+          <h3>Advantages</h3>
+          <app-advantages-form [formArray]="advantagesFormArray"></app-advantages-form>
+        </div>
+
+        <!-- Category and Status -->
+        <div class="form-section">
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Category</mat-label>
+              <mat-select formControlName="categoryId">
+                <mat-option *ngFor="let category of categories" [value]="category._id">
+                  {{category.name}}
+                </mat-option>
+              </mat-select>
+              <mat-error *ngIf="getFormControl('categoryId').hasError('required')">Category is required</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Status</mat-label>
+              <mat-select formControlName="status">
+                <mat-option value="available">Available</mat-option>
+                <mat-option value="unavailable">Unavailable</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Rating</mat-label>
+              <input matInput type="number" formControlName="rating" min="0" max="5" step="0.1">
+              <mat-error *ngIf="getFormControl('rating').hasError('min') || getFormControl('rating').hasError('max')">
+                Rating must be between 0 and 5
+              </mat-error>
+            </mat-form-field>
+          </div>
+        </div>
+
         <div class="form-actions">
-          <button type="button" mat-stroked-button routerLink="/hotels">
-            Cancel
-          </button>
-          <button
-            type="submit"
-            mat-raised-button
-            color="primary"
-            [disabled]="hotelForm.invalid || previewUrls.length === 0"
-          >
+          <button mat-button type="button" routerLink="/hotels">Cancel</button>
+          <button mat-raised-button color="primary" type="submit" [disabled]="!hotelForm.valid">
             Update Hotel
           </button>
         </div>

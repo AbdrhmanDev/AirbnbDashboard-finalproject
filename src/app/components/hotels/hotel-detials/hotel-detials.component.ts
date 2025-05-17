@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Hotel } from '../../../models/hotel';
+import { Hotel2 } from '../../../models/hoteln';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { HotelsService } from '../../../services/hotels.service';
 import { CommonModule } from '@angular/common';
@@ -12,6 +12,9 @@ import { MatCard, MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { CarouselModule, OwlOptions } from 'ngx-owl-carousel-o';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { DeleteConfirmationComponent } from '../delete-confirmation/delete-confirmation.component';
 
 @Component({
   selector: 'app-hotel-detials',
@@ -28,12 +31,13 @@ import { CarouselModule, OwlOptions } from 'ngx-owl-carousel-o';
     MatIconModule,
     MatButtonModule,
     CarouselModule,
+    MatDialogModule,
   ],
   templateUrl: './hotel-detials.component.html',
   styleUrls: ['./hotel-detials.component.css'],
 })
 export class HotelDetialsComponent implements OnInit {
-  hotel!: Hotel;
+  hotel!: Hotel2;
   errorMessage!: string;
   isLoading = true;
   carouselOptions: OwlOptions = {
@@ -54,7 +58,9 @@ export class HotelDetialsComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private hotelsService: HotelsService,
-    private router: Router
+    private router: Router,
+    private snackBar: MatSnackBar,
+    private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
@@ -69,35 +75,64 @@ export class HotelDetialsComponent implements OnInit {
         error: (err) => {
           this.errorMessage = 'Failed to load hotel details.';
           this.isLoading = false;
+          this.snackBar.open('Failed to load hotel details', 'Close', {
+            duration: 3000,
+            panelClass: ['error-snackbar'],
+          });
         },
       });
     }
   }
 
   onDelete(id: string): void {
-    console.log('Delete hotel with ID:', id);
-    this.hotelsService.deleteHotel(id).subscribe({
-      next: () => {
-        console.log('Hotel deleted successfully');
-        this.ngOnInit();
-      },
-      error: (err) => console.error('Failed to delete hotel:', err),
+    const dialogRef = this.dialog.open(DeleteConfirmationComponent, {
+      width: '400px',
+      data: { hotelName: this.hotel.title },
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.hotelsService.deleteHotel(id).subscribe({
+          next: () => {
+            this.snackBar.open('Hotel deleted successfully', 'Close', {
+              duration: 3000,
+              panelClass: ['success-snackbar'],
+            });
+            this.router.navigate(['/hotels']);
+          },
+          error: (err) => {
+            console.error('Failed to delete hotel:', err);
+            this.snackBar.open('Failed to delete hotel', 'Close', {
+              duration: 3000,
+              panelClass: ['error-snackbar'],
+            });
+          },
+        });
+      }
     });
   }
 
-  onDetails(id: string): void {
-    this.router.navigate(['/hotels', id]); // Navigate to details component
-  }
-
-  onHostClick(hostId: string): void {
-    this.router.navigate(['/hosts', hostId]);
-  }
-
   onEdit(): void {
-    console.log('Hotel ID:', this.hotel._id);
     if (this.hotel) {
-      console.log('Hotel ID:', this.hotel._id);
       this.router.navigate(['/hotels/edit', this.hotel._id]);
     }
+  }
+
+  getFirstImageUrl(images: string[]): string {
+    return images && images.length > 0 ? images[0] : 'assets/placeholder.jpg';
+  }
+
+  getSafetyFeatures(): string[] {
+    const features: string[] = [];
+    if (this.hotel.safetyFeatures) {
+      if (this.hotel.safetyFeatures.smokeDetector)
+        features.push('Smoke Detector');
+      if (this.hotel.safetyFeatures.carbonMonoxideDetector)
+        features.push('Carbon Monoxide Detector');
+      if (this.hotel.safetyFeatures.firstAidKit) features.push('First Aid Kit');
+      if (this.hotel.safetyFeatures.fireExtinguisher)
+        features.push('Fire Extinguisher');
+    }
+    return features;
   }
 }

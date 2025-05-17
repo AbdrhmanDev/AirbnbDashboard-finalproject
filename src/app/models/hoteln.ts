@@ -31,7 +31,7 @@ export interface Review {
 }
 
 export interface Hotel2 {
-  
+  _id: string;
   title: string;
   categoryId: string;
   description: string;
@@ -42,14 +42,19 @@ export interface Hotel2 {
   rating?: number;
   amenities?: string[];
   reviews?: Review[];
-  status: "available" | "booked" | "unavailable" | "maintenance";
+  status: 'available' | 'booked' | 'unavailable' | 'maintenance';
   spaceDetails: SpaceDetails;
   capacity: Capacity;
-  petPolicy?: "allowed" | "not_allowed" | "on_request";
-  view?: "ocean" | "mountain" | "city" | "garden" | "none";
+  petPolicy?: 'allowed' | 'not_allowed' | 'on_request';
+  view?: 'ocean' | 'mountain' | 'city' | 'garden' | 'none';
   advantages: string[];
-  cancellationPolicy: "flexible" | "moderate" | "strict";
-  propertyType: "apartment" | "villa" | "house" | "private_room" | "shared_room";
+  cancellationPolicy: 'flexible' | 'moderate' | 'strict';
+  propertyType:
+    | 'apartment'
+    | 'villa'
+    | 'house'
+    | 'private_room'
+    | 'shared_room';
   safetyFeatures?: SafetyFeatures;
   houseRules?: string[];
   createdAt?: Date;

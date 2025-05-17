@@ -22,8 +22,8 @@ export class HotelsService {
       Authorization: `Bearer ${token}`, // Add the token to the Authorization header
     });
   }
-  getHotels(): Observable<Hotel[]> {
-    return this.http.get<Hotel[]>(`${this.apiUrl}/hostHotel`, {
+  getHotels(): Observable<Hotel2[]> {
+    return this.http.get<Hotel2[]>(`${this.apiUrl}/hostHotel`, {
       headers: this.getAuthHeaders(),
     });
   }
@@ -33,8 +33,8 @@ export class HotelsService {
       .delete<any>(url, { headers: this.getAuthHeaders() })
       .pipe(catchError(this.handleError));
   }
-  getHotelById(id: string): Observable<Hotel> {
-    return this.http.get<Hotel>(`${this.apiUrl}/${id}`, {
+  getHotelById(id: string): Observable<Hotel2> {
+    return this.http.get<Hotel2>(`${this.apiUrl}/${id}`, {
       headers: this.getAuthHeaders(),
     });
   }
@@ -43,10 +43,10 @@ export class HotelsService {
       headers: this.getAuthHeaders(),
     });
   }
-  updateHotel(id: string, hotel: Hotel): Observable<Hotel> {
+  updateHotel(id: string, hotel: Hotel2): Observable<Hotel2> {
     const url = `${this.apiUrl}/${id}`; // Construct the URL for the specific hotel
     return this.http
-      .patch<Hotel>(url, hotel, { headers: this.getAuthHeaders() })
+      .patch<Hotel2>(url, hotel, { headers: this.getAuthHeaders() })
       .pipe(catchError(this.handleError));
   }
 

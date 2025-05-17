@@ -3,7 +3,7 @@
     <!-- Image Gallery Section -->
     <div class="image-gallery">
       <div class="main-image">
-        <img [src]="hotel.images[0]" alt="Main Hotel Image" class="featured-image" />
+        <img [src]="getFirstImageUrl(hotel.images)" alt="Main Hotel Image" class="featured-image" />
       </div>
       <div class="image-grid">
         <div class="grid-image" *ngFor="let image of hotel.images.slice(1, 5); let i = index">
@@ -19,29 +19,22 @@
     <div class="hotel-content">
       <div class="hotel-header">
         <h1 class="hotel-title">{{ hotel.title }}</h1>
-        <div class="hotel-rating">
+        <div class="hotel-rating" *ngIf="hotel.rating">
           <mat-icon class="star-icon">star</mat-icon>
           <span>{{ hotel.rating }}/5</span>
-        </div>
-      </div>
-
-      <!-- Host Information -->
-      <div class="host-info" *ngIf="hotel.hostId" (click)="onHostClick(hotel.hostId._id)">
-        <div class="host-avatar">
-          <img [src]="hotel.hostId.avatar" [alt]="hotel.hostId.name" class="host-image" />
-          <div class="host-badge" *ngIf="hotel.hostId.hostDetails?.isSuperHost">
-            <mat-icon>verified</mat-icon>
-          </div>
-        </div>
-        <div class="host-details">
-          <span class="host-name">Hosted by {{ hotel.hostId.name }}</span>
-          <span class="host-since">Host since {{ hotel.hostId.createdAt | date : "mediumDate" }}</span>
         </div>
       </div>
 
       <div class="location-badge">
         <mat-icon>location_on</mat-icon>
         {{ hotel.address.city }}, {{ hotel.address.country }}
+        <span *ngIf="hotel.address.fullAddress"> - {{ hotel.address.fullAddress }}</span>
+      </div>
+
+      <div class="description-section">
+        <h3>Description</h3>
+        <p>{{ hotel.description }}</p>
+        <p *ngIf="hotel.aboutThisSpace">{{ hotel.aboutThisSpace }}</p>
       </div>
 
       <div class="hotel-stats">
@@ -57,7 +50,23 @@
           <mat-icon>meeting_room</mat-icon>
           <div class="stat-content">
             <span class="stat-label">Rooms</span>
-            <span class="stat-value">{{ hotel.rooms }}</span>
+            <span class="stat-value">{{ hotel.spaceDetails.rooms }}</span>
+          </div>
+        </div>
+
+        <div class="stat-item">
+          <mat-icon>bed</mat-icon>
+          <div class="stat-content">
+            <span class="stat-label">Bedrooms</span>
+            <span class="stat-value">{{ hotel.spaceDetails.bedrooms }}</span>
+          </div>
+        </div>
+
+        <div class="stat-item">
+          <mat-icon>bathtub</mat-icon>
+          <div class="stat-content">
+            <span class="stat-label">Bathrooms</span>
+            <span class="stat-value">{{ hotel.spaceDetails.path }}</span>
           </div>
         </div>
 
@@ -68,6 +77,66 @@
             <span class="status-badge" [ngClass]="'status-' + hotel.status">
               {{ hotel.status | titlecase }}
             </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="details-section">
+        <h3>Space Details</h3>
+        <div class="details-grid">
+          <div class="detail-item">
+            <span class="detail-label">Property Type:</span>
+            <span class="detail-value">{{ hotel.propertyType | titlecase }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">View:</span>
+            <span class="detail-value">{{ hotel.view | titlecase }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Pet Policy:</span>
+            <span class="detail-value">{{ hotel.petPolicy | titlecase }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Cancellation Policy:</span>
+            <span class="detail-value">{{ hotel.cancellationPolicy | titlecase }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="capacity-section">
+        <h3>Capacity</h3>
+        <div class="capacity-grid">
+          <div class="capacity-item">
+            <mat-icon>person</mat-icon>
+            <span>{{ hotel.capacity.adults }} Adults</span>
+          </div>
+          <div class="capacity-item">
+            <mat-icon>child_care</mat-icon>
+            <span>{{ hotel.capacity.children }} Children</span>
+          </div>
+          <div class="capacity-item">
+            <mat-icon>baby_changing_station</mat-icon>
+            <span>{{ hotel.capacity.infants }} Infants</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="safety-section" *ngIf="getSafetyFeatures().length > 0">
+        <h3>Safety Features</h3>
+        <div class="safety-features">
+          <div class="safety-item" *ngFor="let feature of getSafetyFeatures()">
+            <mat-icon>check_circle</mat-icon>
+            <span>{{ feature }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="advantages-section" *ngIf="hotel.advantages.length > 0">
+        <h3>Advantages</h3>
+        <div class="advantages-list">
+          <div class="advantage-item" *ngFor="let advantage of hotel.advantages">
+            <mat-icon>star</mat-icon>
+            <span>{{ advantage }}</span>
           </div>
         </div>
       </div>

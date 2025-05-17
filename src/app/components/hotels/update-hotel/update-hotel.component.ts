@@ -1,10 +1,18 @@
-import { Component, OnInit } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  AfterViewInit,
+  ViewChild,
+  ElementRef,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
   FormGroup,
   Validators,
   ReactiveFormsModule,
+  FormArray,
+  FormControl,
 } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -13,10 +21,16 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { ActivatedRoute, Router } from '@angular/router';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { Router, ActivatedRoute } from '@angular/router';
 import { HotelsService } from '../../../services/hotels.service';
 import { CategoryService } from '../../../services/category.service';
 import { Category } from '../../../models/category';
+import { Hotel2 } from '../../../models/hoteln';
+import { AdvantagesFormComponent } from '../create-hotel/advantages-form/advantages-form.component';
+import { CloudinaryUploaderComponent } from '../../cloudinary-uploader/cloudinary-uploader.component';
+import * as L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 
 @Component({
   selector: 'app-update-hotel',
@@ -30,18 +44,24 @@ import { Category } from '../../../models/category';
     MatSelectModule,
     MatButtonModule,
     MatIconModule,
+    MatCheckboxModule,
+    AdvantagesFormComponent,
+    CloudinaryUploaderComponent,
   ],
   templateUrl: './update-hotel.component.html',
   styleUrls: ['./update-hotel.component.css'],
 })
-export class UpdateHotelComponent implements OnInit {
+export class UpdateHotelComponent implements OnInit, AfterViewInit {
+  @ViewChild('map') mapContainer!: ElementRef;
+  private map!: L.Map;
+  private marker!: L.Marker;
+  private defaultLat = 30.0444; // Default latitude (Cairo)
+  private defaultLng = 31.2357; // Default longitude (Cairo)
+
   hotelForm!: FormGroup;
-  hotelId: string = '';
-  imageFiles: File[] = [];
-  base64Images: string[] = [];
-  previewUrls: string[] = [];
+  hotelId!: string;
   categories: Category[] = [];
-  existingImages: string[] = [];
+  isLoading = true;
 
   constructor(
     private fb: FormBuilder,
@@ -53,42 +73,44 @@ export class UpdateHotelComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.hotelId = this.route.snapshot.params['id'];
     this.initForm();
     this.loadCategories();
-    this.route.params.subscribe((params) => {
-      this.hotelId = params['id'];
-      this.loadHotelData();
-    });
+    this.loadHotel();
   }
 
-  private loadHotelData(): void {
-    this.hotelsService.getHotelById(this.hotelId).subscribe({
-      next: (hotel) => {
-        this.hotelForm.patchValue({
-          title: hotel.title,
-          description: hotel.description,
-          pricePerNight: hotel.pricePerNight,
-          rooms: hotel.rooms,
-          bathrooms: hotel.bathrooms,
-          path: hotel.path,
-          status: hotel.status,
-          categoryId: hotel.categoryId,
-          address: {
-            country: hotel.address.country,
-            city: hotel.address.city,
-          },
-        });
-        this.existingImages = hotel.images || [];
-        this.previewUrls = [...this.existingImages];
-        this.base64Images = [...this.existingImages];
-      },
-      error: (error) => {
-        console.error('Error loading hotel:', error);
-        this.snackBar.open('Failed to load hotel data', 'Close', {
-          duration: 3000,
-          panelClass: ['error-snackbar'],
-        });
-      },
+  ngAfterViewInit() {
+    this.initMap();
+  }
+
+  private initMap() {
+    // Initialize the map
+    this.map = L.map(this.mapContainer.nativeElement).setView(
+      [this.defaultLat, this.defaultLng],
+      13
+    );
+
+    // Add the tile layer (OpenStreetMap)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors',
+    }).addTo(this.map);
+
+    // Add click event to the map
+    this.map.on('click', (e: L.LeafletMouseEvent) => {
+      const { lat, lng } = e.latlng;
+
+      // Update marker position
+      if (this.marker) {
+        this.marker.setLatLng([lat, lng]);
+      } else {
+        this.marker = L.marker([lat, lng]).addTo(this.map);
+      }
+
+      // Update form values
+      const coordinates = this.hotelForm.get(
+        'address.coordinates'
+      ) as FormArray;
+      coordinates.setValue([lng, lat]);
     });
   }
 
@@ -107,82 +129,231 @@ export class UpdateHotelComponent implements OnInit {
     });
   }
 
-  private initForm(): void {
-    this.hotelForm = this.fb.group({
-      title: ['', [Validators.required, Validators.minLength(3)]],
-      description: ['', [Validators.required, Validators.minLength(10)]],
-      pricePerNight: ['', [Validators.required, Validators.min(0)]],
-      rooms: ['', [Validators.required, Validators.min(1)]],
-      bathrooms: ['', [Validators.required, Validators.min(1)]],
-      path: ['', [Validators.required, Validators.min(1)]],
-      status: ['available', Validators.required],
-      categoryId: ['', Validators.required],
-      address: this.fb.group({
-        country: ['', Validators.required],
-        city: ['', Validators.required],
-      }),
-      images: [[], Validators.required],
+  private loadHotel(): void {
+    this.hotelsService.getHotelById(this.hotelId).subscribe({
+      next: (hotel) => {
+        this.populateForm(hotel);
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error loading hotel:', error);
+        this.snackBar.open('Failed to load hotel details', 'Close', {
+          duration: 3000,
+          panelClass: ['error-snackbar'],
+        });
+        this.router.navigate(['/hotels']);
+      },
     });
   }
 
-  onImageSelect(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files) {
-      const files = Array.from(input.files);
-      files.forEach((file) => {
-        if (file.type.startsWith('image/')) {
-          this.imageFiles.push(file);
-          const reader = new FileReader();
-          reader.onload = (e) => {
-            if (e.target?.result) {
-              const base64String = e.target.result as string;
-              this.base64Images.push(base64String);
-              this.previewUrls.push(base64String);
-              this.hotelForm.patchValue({
-                images: this.base64Images,
-              });
-            }
-          };
-          reader.readAsDataURL(file);
-        }
+  private initForm(): void {
+    this.hotelForm = this.fb.group({
+      title: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(3),
+          Validators.maxLength(100),
+        ],
+      ],
+      description: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(10),
+          Validators.maxLength(500),
+        ],
+      ],
+      pricePerNight: [
+        0,
+        [Validators.required, Validators.min(1), Validators.max(10000)],
+      ],
+      aboutThisSpace: [
+        '',
+        [Validators.minLength(10), Validators.maxLength(1000)],
+      ],
+
+      address: this.fb.group({
+        fullAddress: ['', [Validators.minLength(5), Validators.maxLength(200)]],
+        country: [
+          '',
+          [
+            Validators.required,
+            Validators.minLength(2),
+            Validators.maxLength(50),
+          ],
+        ],
+        city: [
+          '',
+          [
+            Validators.required,
+            Validators.minLength(2),
+            Validators.maxLength(50),
+          ],
+        ],
+        coordinates: this.fb.array([
+          this.fb.control(null), // Longitude
+          this.fb.control(null), // Latitude
+        ]),
+      }),
+
+      images: this.fb.array([], Validators.required),
+
+      spaceDetails: this.fb.group({
+        bedrooms: [
+          1,
+          [Validators.required, Validators.min(1), Validators.max(5)],
+        ],
+        path: [1, [Validators.required, Validators.min(1), Validators.max(5)]],
+        beds: [1, [Validators.required, Validators.min(1), Validators.max(10)]],
+        area: [10, [Validators.required, Validators.min(10)]],
+        rooms: [
+          1,
+          [Validators.required, Validators.min(1), Validators.max(10)],
+        ],
+      }),
+
+      capacity: this.fb.group({
+        adults: [
+          1,
+          [Validators.required, Validators.min(1), Validators.max(10)],
+        ],
+        children: [
+          0,
+          [Validators.required, Validators.min(0), Validators.max(5)],
+        ],
+        infants: [
+          0,
+          [Validators.required, Validators.min(0), Validators.max(3)],
+        ],
+      }),
+
+      petPolicy: ['not_allowed', Validators.required],
+      view: ['none', Validators.required],
+      advantages: this.fb.array([], Validators.required),
+      cancellationPolicy: ['flexible', Validators.required],
+      propertyType: ['apartment', Validators.required],
+
+      safetyFeatures: this.fb.group({
+        smokeDetector: [false],
+        carbonMonoxideDetector: [false],
+        firstAidKit: [false],
+        fireExtinguisher: [false],
+      }),
+
+      houseRules: this.fb.array([]),
+
+      status: ['available', Validators.required],
+      categoryId: ['', Validators.required],
+      rating: [0, [Validators.min(0), Validators.max(5)]],
+    });
+  }
+
+  private populateForm(hotel: Hotel2): void {
+    // Clear existing form arrays
+    while (this.images.length) {
+      this.images.removeAt(0);
+    }
+    while (this.advantages.length) {
+      this.advantages.removeAt(0);
+    }
+    while (this.houseRules.length) {
+      this.houseRules.removeAt(0);
+    }
+
+    // Add images
+    hotel.images.forEach((image) => {
+      this.images.push(this.fb.control(image));
+    });
+
+    // Add advantages
+    hotel.advantages.forEach((advantage) => {
+      this.advantages.push(this.fb.control(advantage));
+    });
+
+    // Add house rules if they exist
+    if (hotel.houseRules) {
+      hotel.houseRules.forEach((rule) => {
+        this.houseRules.push(this.fb.control(rule));
       });
     }
+
+    // Set coordinates if they exist
+    if (hotel.address.coordinates) {
+      const coordinates = this.hotelForm.get(
+        'address.coordinates'
+      ) as FormArray;
+      coordinates.setValue(hotel.address.coordinates);
+    }
+
+    // Update the form with the hotel data
+    this.hotelForm.patchValue({
+      title: hotel.title,
+      description: hotel.description,
+      pricePerNight: hotel.pricePerNight,
+      aboutThisSpace: hotel.aboutThisSpace,
+      address: {
+        fullAddress: hotel.address.fullAddress,
+        country: hotel.address.country,
+        city: hotel.address.city,
+      },
+      spaceDetails: hotel.spaceDetails,
+      capacity: hotel.capacity,
+      petPolicy: hotel.petPolicy,
+      view: hotel.view,
+      cancellationPolicy: hotel.cancellationPolicy,
+      propertyType: hotel.propertyType,
+      safetyFeatures: hotel.safetyFeatures,
+      status: hotel.status,
+      categoryId: hotel.categoryId,
+      rating: hotel.rating,
+    });
+
+    // Update map marker if coordinates exist
+    if (hotel.address.coordinates) {
+      const [lng, lat] = hotel.address.coordinates;
+      if (this.marker) {
+        this.marker.setLatLng([lat, lng]);
+      } else {
+        this.marker = L.marker([lat, lng]).addTo(this.map);
+      }
+      this.map.setView([lat, lng], 13);
+    }
+  }
+
+  onImageUpload(imageUrl: string) {
+    this.images.push(this.fb.control(imageUrl));
   }
 
   removeImage(index: number): void {
-    if (index < this.existingImages.length) {
-      // Removing an existing image
-      this.existingImages.splice(index, 1);
-    } else {
-      // Removing a newly added image
-      const newIndex = index - this.existingImages.length;
-      this.imageFiles.splice(newIndex, 1);
-      this.base64Images.splice(index, 1);
-    }
-    this.previewUrls.splice(index, 1);
-    this.hotelForm.patchValue({
-      images: this.base64Images,
-    });
+    this.images.removeAt(index);
+  }
+
+  get images(): FormArray {
+    return this.hotelForm.get('images') as FormArray;
+  }
+
+  get advantages(): FormArray {
+    return this.hotelForm.get('advantages') as FormArray;
+  }
+
+  get houseRules(): FormArray {
+    return this.hotelForm.get('houseRules') as FormArray;
+  }
+
+  get advantagesFormArray(): FormArray {
+    return this.hotelForm.get('advantages') as FormArray;
+  }
+
+  getFormControl(controlName: string): FormControl {
+    return this.hotelForm.get(controlName) as FormControl;
   }
 
   onSubmit(): void {
-    if (
-      this.hotelForm.valid &&
-      (this.base64Images.length > 0 || this.existingImages.length > 0)
-    ) {
+    if (this.hotelForm.valid) {
       const formValue = this.hotelForm.value;
-
-      // Create the final form data object
-      const hotelData = {
-        ...formValue,
-        images: [
-          ...this.existingImages,
-          ...this.base64Images.slice(this.existingImages.length),
-        ],
-      };
-
-      this.hotelsService.updateHotel(this.hotelId, hotelData).subscribe({
-        next: (response) => {
+      this.hotelsService.updateHotel(this.hotelId, formValue).subscribe({
+        next: () => {
           this.snackBar.open('Hotel updated successfully!', 'Close', {
             duration: 3000,
             panelClass: ['success-snackbar'],
@@ -190,15 +361,11 @@ export class UpdateHotelComponent implements OnInit {
           this.router.navigate(['/hotels']);
         },
         error: (error) => {
-          this.snackBar.open(
-            'Failed to update hotel. Please try again.',
-            'Close',
-            {
-              duration: 3000,
-              panelClass: ['error-snackbar'],
-            }
-          );
           console.error('Error updating hotel:', error);
+          this.snackBar.open('Failed to update hotel', 'Close', {
+            duration: 3000,
+            panelClass: ['error-snackbar'],
+          });
         },
       });
     } else {

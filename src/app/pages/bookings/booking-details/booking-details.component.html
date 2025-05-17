@@ -67,9 +67,7 @@
         </mat-card-header>
         <img mat-card-image [src]="property.images[0]" class="property-image" />
         <mat-card-content>
-          <h2>
-            {{ property.hostId?.name }}
-          </h2>
+          <h2>{{ property.title }}</h2>
           <p class="location">
             <mat-icon>location_on</mat-icon>
             {{ property.address.city }}, {{ property.address.country }}
@@ -78,7 +76,7 @@
           <div class="property-features">
             <div class="feature">
               <mat-icon>hotel</mat-icon>
-              <span>{{ property.rooms }} Rooms</span>
+              <span>{{ property.spaceDetails.rooms }} Rooms</span>
             </div>
           </div>
         </mat-card-content>

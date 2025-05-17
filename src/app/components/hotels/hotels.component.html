@@ -5,12 +5,7 @@
       <h1>Hotel Management</h1>
       <p>{{ (hotels$ | async)?.length || 0 }} hotels listed</p>
     </div>
-    <button
-      class="add-hotel-btn"
-      routerLink="/add-hotel"
-      mat-raised-button
-      color="primary"
-    >
+    <button class="add-hotel-btn" routerLink="/add-hotel" mat-raised-button color="primary">
       <mat-icon>add</mat-icon>
       Add New Hotel
     </button>
@@ -20,20 +15,12 @@
   <div class="filters-section">
     <mat-form-field appearance="outline" class="search-field">
       <mat-label>Search hotels</mat-label>
-      <input
-        matInput
-        placeholder="Search by name, location..."
-        (input)="onSearch($event)"
-        [(ngModel)]="searchQuery"
-      />
+      <input matInput placeholder="Search by name, location..." (input)="onSearch($event)" [(ngModel)]="searchQuery" />
       <mat-icon matSuffix>search</mat-icon>
     </mat-form-field>
 
     <div class="filter-buttons">
-      <mat-button-toggle-group
-        [(ngModel)]="selectedStatus"
-        (change)="onFilterChange($event.value)"
-      >
+      <mat-button-toggle-group [(ngModel)]="selectedStatus" (change)="onFilterChange($event.value)">
         <mat-button-toggle value="all">All</mat-button-toggle>
         <mat-button-toggle value="available">Available</mat-button-toggle>
         <mat-button-toggle value="booked">Booked</mat-button-toggle>
@@ -57,11 +44,7 @@
   <div class="admin-grid" *ngIf="!isLoading">
     <mat-card class="hotel-card" *ngFor="let hotel of hotels$ | async">
       <div class="hotel-card-header">
-        <img
-          [src]="getFirstImageUrl(hotel.images)"
-          [alt]="hotel.title"
-          class="hotel-thumbnail"
-        />
+        <img [src]="getFirstImageUrl(hotel.images)" [alt]="hotel.title" class="hotel-thumbnail" />
         <div class="header-content">
           <h3>{{ hotel.title }}</h3>
           <div class="hotel-meta">
@@ -91,7 +74,7 @@
           </div>
           <div class="stat-item">
             <span class="label">Rooms</span>
-            <span class="value">{{ hotel.rooms }}</span>
+            <span class="value">{{ hotel.spaceDetails.rooms }}</span>
           </div>
         </div>
       </mat-card-content>

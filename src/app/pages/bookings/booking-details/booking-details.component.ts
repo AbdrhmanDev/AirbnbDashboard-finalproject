@@ -12,7 +12,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { BookingService } from '../../../services/booking.service';
 import { HotelsService } from '../../../services/hotels.service';
 import { Booking, User } from '../../../models/booking';
-import { Hotel } from '../../../models/hotel';
+import { Hotel2 } from '../../../models/hoteln';
 
 @Component({
   selector: 'app-booking-details',
@@ -34,7 +34,7 @@ import { Hotel } from '../../../models/hotel';
 export class BookingDetailsComponent implements OnInit {
   booking: Booking | null = null;
   currentProperty: any = null;
-  property: Hotel | null = null;
+  property: Hotel2 | null = null;
   isLoading = true;
   error: string | null = null;
 

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Hotel } from '../../models/hotel';
+import { Hotel2 } from '../../models/hoteln';
 import { HotelsService } from '../../services/hotels.service';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
@@ -40,7 +40,6 @@ import { MatSnackBar } from '@angular/material/snack-bar';
     MatButtonToggleModule,
     MatProgressSpinnerModule,
     MatChipsModule,
-
     FormsModule,
     MatDialogModule,
   ],
@@ -48,8 +47,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
   styleUrls: ['./hotels.component.css'],
 })
 export class HotelsComponent implements OnInit {
-  private hotelsSubject = new BehaviorSubject<Hotel[]>([]);
-  hotels$!: Observable<Hotel[]>;
+  private hotelsSubject = new BehaviorSubject<Hotel2[]>([]);
+  hotels$!: Observable<Hotel2[]>;
   errorMessage!: string;
   isLoading = true;
 
@@ -110,10 +109,10 @@ export class HotelsComponent implements OnInit {
   }
 
   private filterHotels(
-    hotels: Hotel[],
+    hotels: Hotel2[],
     search: string,
     filter: string
-  ): Hotel[] {
+  ): Hotel2[] {
     return hotels.filter((hotel) => {
       const matchesSearch =
         search === '' ||
@@ -135,7 +134,7 @@ export class HotelsComponent implements OnInit {
     this.router.navigate(['/hotels/edit', id]);
   }
 
-  onDelete(hotel: Hotel): void {
+  onDelete(hotel: Hotel2): void {
     const dialogRef = this.dialog.open(DeleteConfirmationComponent, {
       width: '400px',
       data: { hotelName: hotel.title },
