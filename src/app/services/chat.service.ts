@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, Subject } from 'rxjs';
+import { Observable, Subject, BehaviorSubject } from 'rxjs';
 import { Message, User } from '../models/messges';
 import { environment } from '../../environments/environment';
 import Pusher from 'pusher-js';
+import { filter } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
@@ -11,8 +12,10 @@ import Pusher from 'pusher-js';
 export class ChatService {
   private apiUrl = `${environment.apiUrl}/chat`;
   private pusher: Pusher;
-  private channel: any;
-  private messageSubject = new Subject<Message>();
+  private channels: Map<string, any> = new Map();
+  private messageSubject = new BehaviorSubject<Message | null>(null);
+  private conversationSubject = new BehaviorSubject<any>(null);
+  private currentConversationId: string | null = null;
 
   constructor(private http: HttpClient) {
     // Initialize Pusher
@@ -35,30 +38,112 @@ export class ChatService {
     });
   }
 
-  // Subscribe to a chat channel
-  subscribeToChat(userId: string): Observable<Message> {
-    // Subscribe to the user's channel
-    this.channel = this.pusher.subscribe(`private-chat-${userId}`);
+  private subscribeToChannel(channelName: string) {
+    if (!this.channels.has(channelName)) {
+      const channel = this.pusher.subscribe(channelName);
 
-    this.channel.bind('new-message', (data: Message) => {
-      this.messageSubject.next(data);
-    });
+      channel.bind('new-message', (data: Message) => {
+        console.log(`New message received in ${channelName}:`, data);
 
-    this.channel.bind('message-update', (data: Message) => {
-      this.messageSubject.next(data);
-    });
+        // إرسال الرسالة إلى messageSubject
+        this.messageSubject.next(data);
 
-    return this.messageSubject.asObservable();
-  }
+        // إذا كانت الرسالة تخص المحادثة الحالية، قم بتحديثها
+        if (this.currentConversationId) {
+          const conversationUserId = channelName.replace('private-chat-', '');
+          if (
+            (typeof data.sender === 'object' &&
+              data.sender._id === conversationUserId) ||
+            (typeof data.receiver === 'object' &&
+              data.receiver._id === conversationUserId)
+          ) {
+            console.log(
+              'Updating current conversation with new message:',
+              data
+            );
+            this.conversationSubject.next({
+              type: 'message',
+              data: data,
+            });
+          }
+        }
+      });
 
-  // Unsubscribe from chat
-  unsubscribeFromChat() {
-    if (this.channel) {
-      this.pusher.unsubscribe(`private-chat-${this.channel.name}`);
+      channel.bind('message-update', (data: Message) => {
+        console.log(`Message update received in ${channelName}:`, data);
+        this.messageSubject.next(data);
+
+        // تحديث الرسالة في المحادثة الحالية إذا كانت موجودة
+        if (this.currentConversationId) {
+          const conversationUserId = channelName.replace('private-chat-', '');
+          if (
+            (typeof data.sender === 'object' &&
+              data.sender._id === conversationUserId) ||
+            (typeof data.receiver === 'object' &&
+              data.receiver._id === conversationUserId)
+          ) {
+            this.conversationSubject.next({
+              type: 'update',
+              data: data,
+            });
+          }
+        }
+      });
+
+      channel.bind('pusher:error', (error: any) => {
+        console.error(`Pusher error in ${channelName}:`, error);
+      });
+
+      this.channels.set(channelName, channel);
     }
+    return this.channels.get(channelName);
   }
 
-  // Basic Message Operations
+  // Subscribe to chat messages
+  subscribeToChat(userId: string): Observable<Message> {
+    const channelName = `private-chat-${userId}`;
+    this.subscribeToChannel(channelName);
+    return this.messageSubject
+      .asObservable()
+      .pipe(filter((message): message is Message => message !== null));
+  }
+
+  // Get conversation messages
+  getConversation(userId: string): Observable<any> {
+    this.currentConversationId = userId;
+    const channelName = `private-chat-${userId}`;
+    this.subscribeToChannel(channelName);
+
+    // Initial fetch of conversation
+    this.http
+      .get(`${environment.apiUrl}/chat/conversations/${userId}`, {
+        headers: this.getHeaders(),
+      })
+      .subscribe({
+        next: (response: any) => {
+          console.log('Initial conversation response:', response);
+          if (response.status === 'success' && Array.isArray(response.data)) {
+            this.conversationSubject.next({
+              type: 'initial',
+              data: response.data,
+            });
+          } else {
+            console.error('Invalid conversation data format:', response);
+          }
+        },
+        error: (error) => {
+          console.error('Error fetching conversation:', error);
+          this.conversationSubject.next({
+            type: 'error',
+            error: error,
+          });
+        },
+      });
+
+    return this.conversationSubject.asObservable();
+  }
+
+  // Send message
   sendMessage(message: {
     receiverId: string;
     content: string;
@@ -72,61 +157,14 @@ export class ChatService {
     );
   }
 
-  private conversationSubject = new Subject<any>();
-
-  getConversation(userId: string): Observable<any> {
-    // Subscribe to conversation updates
-    this.channel = this.pusher.subscribe(`private-chat-${userId}`);
-
-    // Listen for new messages in this conversation
-    this.channel.bind('new-message', (data: Message) => {
-      this.conversationSubject.next(data);
-    });
-
-    // Listen for message updates in this conversation
-    this.channel.bind('message-update', (data: Message) => {
-      this.conversationSubject.next(data);
-    });
-
-    // Initial fetch of conversation
-    this.http.get(`${environment.apiUrl}/chat/conversations/${userId}`, {
-      headers: this.getHeaders(),
-    }).subscribe(conversation => {
-      this.conversationSubject.next(conversation);
-    });
-
-    return this.conversationSubject.asObservable();
-  }
-
+  // Get all conversations
   getAllConversations(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/conversations`, {
       headers: this.getHeaders(),
     });
   }
 
-  // Message Management
-  deleteMessage(messageId: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/messages/${messageId}`, {
-      headers: this.getHeaders(),
-    });
-  }
-
-  editMessage(messageId: string, content: string): Observable<Message> {
-    return this.http.patch<Message>(
-      `${this.apiUrl}/messages/${messageId}`,
-      { content },
-      { headers: this.getHeaders() }
-    );
-  }
-
-  markAsDelivered(messageId: string): Observable<Message> {
-    return this.http.patch<Message>(
-      `${this.apiUrl}/messages/${messageId}/deliver`,
-      {},
-      { headers: this.getHeaders() }
-    );
-  }
-
+  // Mark message as read
   markAsRead(messageId: string): Observable<Message> {
     return this.http.patch<Message>(
       `${this.apiUrl}/messages/${messageId}/read`,
@@ -135,10 +173,20 @@ export class ChatService {
     );
   }
 
+  // Get unread count
   getUnreadCount(): Observable<number> {
     return this.http.get<number>(`${this.apiUrl}/messages/unread/count`, {
       headers: this.getHeaders(),
     });
+  }
+
+  // Unsubscribe from chat
+  unsubscribeFromChat() {
+    this.channels.forEach((channel, channelName) => {
+      this.pusher.unsubscribe(channelName);
+    });
+    this.channels.clear();
+    this.currentConversationId = null;
   }
 
   // Advanced Features
@@ -216,5 +264,16 @@ export class ChatService {
     return this.http.get<User[]>(`${this.apiUrl}/users/online`, {
       headers: this.getHeaders(),
     });
+  }
+
+  // Add method to check if channel is subscribed
+  isChannelSubscribed(): boolean {
+    return this.channels.size > 0;
+  }
+
+  // Add method to resubscribe if needed
+  resubscribeToChannel(userId: string) {
+    this.unsubscribeFromChat();
+    this.subscribeToChannel(`private-chat-${userId}`);
   }
 }

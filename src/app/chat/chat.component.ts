@@ -44,6 +44,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   unreadCount = 0;
   onlineUsers: User[] = [];
   private chatSubscription?: Subscription;
+  private conversationSubscription?: Subscription;
 
   constructor(
     private chatService: ChatService,
@@ -55,6 +56,13 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.loadUnreadCount();
     this.loadOnlineUsers();
     this.subscribeToChat();
+
+    // إضافة فحص دوري لتحديث المحادثات
+    setInterval(() => {
+      if (this.isChatOpen) {
+        this.loadConversations();
+      }
+    }, 5000); // تحديث كل 5 ثواني
   }
 
   toggleChat() {
@@ -105,7 +113,13 @@ export class ChatComponent implements OnInit, OnDestroy {
         .subscribeToChat(this.currentUserId)
         .subscribe({
           next: (message) => {
-            this.handleNewMessage(message);
+            if (message) {
+              console.log('New message received in subscription:', message);
+              this.handleNewMessage(message);
+              // تحديث قائمة المحادثات مباشرة
+              this.loadConversations();
+              this.changeDetectorRef.detectChanges();
+            }
           },
           error: (error) => {
             console.error('Error in chat subscription:', error);
@@ -115,87 +129,119 @@ export class ChatComponent implements OnInit, OnDestroy {
   }
 
   selectConversation(conversation: Conversation) {
+    // إلغاء الاشتراك من المحادثة السابقة إذا كانت موجودة
+    if (this.conversationSubscription) {
+      this.conversationSubscription.unsubscribe();
+    }
+
     this.selectedConversation = conversation;
     if (conversation._id._id) {
-      this.chatService.getConversation(conversation._id._id).subscribe({
-        next: (response: any) => {
-          if (response.status === 'success' && Array.isArray(response.data)) {
-            this.messages = response.data;
-            // Mark messages as read if they are received messages
-            this.messages.forEach((message) => {
-              if (
-                typeof message.receiver === 'object' &&
-                message.receiver._id === this.currentUserId &&
-                !message.read &&
-                message._id
-              ) {
-                this.chatService.markAsRead(message._id).subscribe();
-              }
-            });
+      // الاشتراك في تحديثات المحادثة
+      this.conversationSubscription = this.chatService
+        .getConversation(conversation._id._id)
+        .subscribe({
+          next: (response: any) => {
+            if (!response) return;
+
+            console.log('Conversation response:', response);
+
+            switch (response.type) {
+              case 'initial':
+                if (Array.isArray(response.data)) {
+                  this.messages = response.data;
+                  // تحديث حالة القراءة للرسائل المستلمة
+                  this.messages.forEach((message) => {
+                    if (
+                      typeof message.receiver === 'object' &&
+                      message.receiver._id === this.currentUserId &&
+                      !message.read &&
+                      message._id
+                    ) {
+                      this.chatService.markAsRead(message._id).subscribe();
+                    }
+                  });
+                  console.log('Initial messages loaded:', this.messages);
+                }
+                break;
+
+              case 'message':
+                const newMessage = response.data;
+                if (!this.messages.some((m) => m._id === newMessage._id)) {
+                  this.messages = [...this.messages, newMessage];
+                  console.log('New message added to conversation:', newMessage);
+
+                  if (
+                    typeof newMessage.receiver === 'object' &&
+                    newMessage.receiver._id === this.currentUserId &&
+                    !newMessage.read &&
+                    newMessage._id
+                  ) {
+                    this.chatService.markAsRead(newMessage._id).subscribe();
+                  }
+                }
+                break;
+
+              case 'update':
+                const updatedMessage = response.data;
+                const index = this.messages.findIndex(
+                  (m) => m._id === updatedMessage._id
+                );
+                if (index !== -1) {
+                  this.messages[index] = updatedMessage;
+                  console.log(
+                    'Message updated in conversation:',
+                    updatedMessage
+                  );
+                }
+                break;
+
+              case 'error':
+                console.error('Error in conversation:', response.error);
+                break;
+            }
+
             this.scrollToBottom();
-          }
-        },
-        error: (error) => {
-          console.error('Error loading conversation:', error);
-        },
-      });
+            this.changeDetectorRef.detectChanges();
+          },
+          error: (error) => {
+            console.error('Error in conversation subscription:', error);
+          },
+        });
     }
   }
 
   handleNewMessage(message: Message) {
-    console.log('New message received:', message);
-    
-    // تحديث المحادثات فوراً عند استلام رسالة جديدة
-    this.chatService.getAllConversations().subscribe({
-      next: (response: any) => {
-        if (response.status === 'success' && Array.isArray(response.data)) {
-          this.conversations = response.data;
-          this.changeDetectorRef.detectChanges();
-        }
-      }
-    });
-    
+    console.log('Handling new message:', message);
+
+    // تحديث قائمة المحادثات
+    this.loadConversations();
+
+    // التحقق مما إذا كانت الرسالة تنتمي للمحادثة المفتوحة حالياً
     if (
       this.selectedConversation &&
       ((message.sender as User)._id === this.selectedConversation._id._id ||
         (message.receiver as User)._id === this.selectedConversation._id._id)
     ) {
-      if (message.status !== 'read' && (message.sender as User)._id !== this.currentUserId) {
-        message.status = 'delivered';
-        if (message._id) {
-          this.chatService.markAsDelivered(message._id).subscribe();
+      // إضافة الرسالة إلى المحادثة الحالية إذا لم تكن موجودة
+      if (!this.messages.some((m) => m._id === message._id)) {
+        this.messages = [...this.messages, message];
+        console.log('Message added to current conversation:', message);
+
+        // تحديث حالة القراءة إذا كنا المستلم
+        if (
+          typeof message.receiver === 'object' &&
+          message.receiver._id === this.currentUserId &&
+          !message.read &&
+          message._id
+        ) {
+          this.chatService.markAsRead(message._id).subscribe();
         }
-      }
 
-      if (message.threadId) {
-        const threadParent = this.messages.find(m => m._id === message.threadId);
-        if (threadParent && threadParent.threadMessageCount !== undefined) {
-          threadParent.threadMessageCount++;
-        }
-      }
-
-      this.messages = [...this.messages, message];
-      
-      // تحديث الواجهة وتمرير التغييرات فوراً
-      this.changeDetectorRef.detectChanges();
-      this.scrollToBottom();
-
-      // تحديث حالة القراءة إذا كان المرسل ليس المستخدم الحالي
-      if ((message.sender as User)._id !== this.currentUserId && message._id) {
-        this.chatService.markAsRead(message._id).subscribe();
-      }
-    } else if ((message.sender as User)._id !== this.currentUserId && message._id) {
-      // إذا لم تكن المحادثة مفتوحة، نقوم فقط بتحديث حالة التسليم
-      this.chatService.markAsDelivered(message._id).subscribe();
-    }
-
-    // تحديث عداد الرسائل غير المقروءة
-    this.chatService.getUnreadCount().subscribe({
-      next: (count) => {
-        this.unreadCount = count;
+        // تحديث واجهة المستخدم
         this.changeDetectorRef.detectChanges();
+        this.scrollToBottom();
       }
-    });
+    }
   }
 
   sendMessage() {
@@ -212,7 +258,6 @@ export class ChatComponent implements OnInit, OnDestroy {
           this.messages = [...this.messages, response.data];
           this.newMessageContent = '';
           this.scrollToBottom();
-          // تحديث المحادثات مباشرة بعد إرسال الرسالة
           this.loadConversations();
           this.changeDetectorRef.detectChanges();
         }
@@ -250,31 +295,6 @@ export class ChatComponent implements OnInit, OnDestroy {
     }
   }
 
-  editMessage(messageId: string, content: string) {
-    this.chatService.editMessage(messageId, content).subscribe({
-      next: (updatedMessage) => {
-        const index = this.messages.findIndex((m) => m._id === messageId);
-        if (index !== -1) {
-          this.messages[index] = updatedMessage;
-        }
-      },
-      error: (error) => {
-        console.error('Error editing message:', error);
-      },
-    });
-  }
-
-  deleteMessage(messageId: string) {
-    this.chatService.deleteMessage(messageId).subscribe({
-      next: () => {
-        this.messages = this.messages.filter((m) => m._id !== messageId);
-      },
-      error: (error) => {
-        console.error('Error deleting message:', error);
-      },
-    });
-  }
-
   addReaction(messageId: string, reaction: string) {
     this.chatService
       .addReaction(messageId, this.currentUserId, reaction)
@@ -291,6 +311,25 @@ export class ChatComponent implements OnInit, OnDestroy {
       });
   }
 
+  editMessage(messageId: string, content: string) {
+    // For now, we'll just update the message locally
+    const index = this.messages.findIndex((m) => m._id === messageId);
+    if (index !== -1) {
+      this.messages[index] = {
+        ...this.messages[index],
+        content: content,
+        edited: true,
+      };
+      this.changeDetectorRef.detectChanges();
+    }
+  }
+
+  deleteMessage(messageId: string) {
+    // For now, we'll just remove the message locally
+    this.messages = this.messages.filter((m) => m._id !== messageId);
+    this.changeDetectorRef.detectChanges();
+  }
+
   updateUserStatus(status: string) {
     this.chatService.updateUserStatus(status).subscribe({
       error: (error) => {
@@ -300,7 +339,12 @@ export class ChatComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.chatSubscription?.unsubscribe();
+    if (this.chatSubscription) {
+      this.chatSubscription.unsubscribe();
+    }
+    if (this.conversationSubscription) {
+      this.conversationSubscription.unsubscribe();
+    }
     this.chatService.unsubscribeFromChat();
   }
 
