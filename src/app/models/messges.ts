@@ -1,7 +1,7 @@
 export interface Message {
   _id?: string;
-  sender: User | string;
-  receiver: User | string;
+  sender: User;
+  receiver: User ;
   content?: string;
   booking?: string;
   delivered?: boolean;
@@ -18,11 +18,14 @@ export interface Message {
   group?: string;
   createdAt?: Date;
   updatedAt?: Date;
+  status?: 'delivered' | 'read' | 'sent';
+  threadId?: string;
+  threadMessageCount?: number;
 }
 
 export interface User {
   _id: string;
   name: string;
   email: string;
-  profilePicture?: string;
+  avatar?: string;
 }

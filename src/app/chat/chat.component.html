@@ -54,6 +54,11 @@
                 <div class="chat-messages" #messageContainer>
                     <div *ngFor="let message of messages" class="message"
                         [ngClass]="{'sent': isSender(message), 'received': isReceiver(message)}">
+                        <div class="message-sender" *ngIf="!isSender(message)">
+                            <img [src]="message.sender.avatar || 'assets/default-avatar.png'" 
+                                 alt="Sender's avatar" class="sender-avatar">
+                            <span class="sender-name">{{message.sender.name}}</span>
+                        </div>
                         <div class="message-content">
                             <div class="message-text">{{message.content}}</div>
                             <div class="message-actions">
@@ -79,9 +84,7 @@
 
                 <div class="chat-input">
                     <div class="input-actions">
-                        <input type="file" (change)="sendAttachment($event)" accept="image/*,application/pdf" #fileInput
-                            style="display: none">
-                        <button (click)="fileInput.click()">📎</button>
+                      
                     </div>
                     <input [(ngModel)]="newMessageContent" placeholder="Write a message..."
                         (keyup.enter)="sendMessage()" (focus)="setTypingStatus(true)" (blur)="setTypingStatus(false)">

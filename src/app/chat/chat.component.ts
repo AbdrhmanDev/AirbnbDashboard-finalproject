@@ -4,6 +4,7 @@ import {
   OnDestroy,
   ViewChild,
   ElementRef,
+  ChangeDetectorRef,
 } from '@angular/core';
 import { ChatService } from '../services/chat.service';
 import { Message, User } from '../models/messges';
@@ -44,7 +45,10 @@ export class ChatComponent implements OnInit, OnDestroy {
   onlineUsers: User[] = [];
   private chatSubscription?: Subscription;
 
-  constructor(private chatService: ChatService) {}
+  constructor(
+    private chatService: ChatService,
+    private changeDetectorRef: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
     this.loadConversations();
@@ -139,26 +143,59 @@ export class ChatComponent implements OnInit, OnDestroy {
   }
 
   handleNewMessage(message: Message) {
+    console.log('New message received:', message);
+    
+    // تحديث المحادثات فوراً عند استلام رسالة جديدة
+    this.chatService.getAllConversations().subscribe({
+      next: (response: any) => {
+        if (response.status === 'success' && Array.isArray(response.data)) {
+          this.conversations = response.data;
+          this.changeDetectorRef.detectChanges();
+        }
+      }
+    });
+    
     if (
       this.selectedConversation &&
       ((message.sender as User)._id === this.selectedConversation._id._id ||
         (message.receiver as User)._id === this.selectedConversation._id._id)
     ) {
-      this.messages.push(message);
-      this.scrollToBottom();
-    }
+      if (message.status !== 'read' && (message.sender as User)._id !== this.currentUserId) {
+        message.status = 'delivered';
+        if (message._id) {
+          this.chatService.markAsDelivered(message._id).subscribe();
+        }
+      }
 
-    if ((message.sender as User)._id !== this.currentUserId && message._id) {
-      this.chatService.markAsDelivered(message._id).subscribe();
-      if (
-        this.selectedConversation &&
-        (message.sender as User)._id === this.selectedConversation._id._id
-      ) {
+      if (message.threadId) {
+        const threadParent = this.messages.find(m => m._id === message.threadId);
+        if (threadParent && threadParent.threadMessageCount !== undefined) {
+          threadParent.threadMessageCount++;
+        }
+      }
+
+      this.messages = [...this.messages, message];
+      
+      // تحديث الواجهة وتمرير التغييرات فوراً
+      this.changeDetectorRef.detectChanges();
+      this.scrollToBottom();
+
+      // تحديث حالة القراءة إذا كان المرسل ليس المستخدم الحالي
+      if ((message.sender as User)._id !== this.currentUserId && message._id) {
         this.chatService.markAsRead(message._id).subscribe();
       }
+    } else if ((message.sender as User)._id !== this.currentUserId && message._id) {
+      // إذا لم تكن المحادثة مفتوحة، نقوم فقط بتحديث حالة التسليم
+      this.chatService.markAsDelivered(message._id).subscribe();
     }
 
-    this.loadConversations();
+    // تحديث عداد الرسائل غير المقروءة
+    this.chatService.getUnreadCount().subscribe({
+      next: (count) => {
+        this.unreadCount = count;
+        this.changeDetectorRef.detectChanges();
+      }
+    });
   }
 
   sendMessage() {
@@ -170,10 +207,15 @@ export class ChatComponent implements OnInit, OnDestroy {
     };
 
     this.chatService.sendMessage(message).subscribe({
-      next: (response) => {
-        this.messages.push(response);
-        this.newMessageContent = '';
-        this.scrollToBottom();
+      next: (response: any) => {
+        if (response.status === 'success' && response.data) {
+          this.messages = [...this.messages, response.data];
+          this.newMessageContent = '';
+          this.scrollToBottom();
+          // تحديث المحادثات مباشرة بعد إرسال الرسالة
+          this.loadConversations();
+          this.changeDetectorRef.detectChanges();
+        }
       },
       error: (error) => {
         console.error('Error sending message:', error);

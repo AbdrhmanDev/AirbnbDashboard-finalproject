@@ -72,10 +72,30 @@ export class ChatService {
     );
   }
 
+  private conversationSubject = new Subject<any>();
+
   getConversation(userId: string): Observable<any> {
-    return this.http.get(`${environment.apiUrl}/chat/conversations/${userId}`, {
-      headers: this.getHeaders(),
+    // Subscribe to conversation updates
+    this.channel = this.pusher.subscribe(`private-chat-${userId}`);
+
+    // Listen for new messages in this conversation
+    this.channel.bind('new-message', (data: Message) => {
+      this.conversationSubject.next(data);
     });
+
+    // Listen for message updates in this conversation
+    this.channel.bind('message-update', (data: Message) => {
+      this.conversationSubject.next(data);
+    });
+
+    // Initial fetch of conversation
+    this.http.get(`${environment.apiUrl}/chat/conversations/${userId}`, {
+      headers: this.getHeaders(),
+    }).subscribe(conversation => {
+      this.conversationSubject.next(conversation);
+    });
+
+    return this.conversationSubject.asObservable();
   }
 
   getAllConversations(): Observable<any[]> {

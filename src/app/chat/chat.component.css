@@ -313,6 +313,25 @@
     animation: messageSlide 0.3s ease-out;
 }
 
+.message-sender {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.sender-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin-right: 8px;
+    object-fit: cover;
+}
+
+.sender-name {
+    font-size: 0.9em;
+    color: #666;
+}
+
 @keyframes messageSlide {
     from {
         opacity: 0;
