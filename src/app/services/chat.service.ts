@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, Subject } from 'rxjs';
 import { Message, User } from '../models/messges';
 import { environment } from '../../environments/environment';
@@ -9,7 +9,7 @@ import Pusher from 'pusher-js';
   providedIn: 'root',
 })
 export class ChatService {
-  private apiUrl = `${environment.apiUrl}/messages`;
+  private apiUrl = `${environment.apiUrl}/chat`;
   private pusher: Pusher;
   private channel: any;
   private messageSubject = new Subject<Message>();
@@ -18,6 +18,20 @@ export class ChatService {
     // Initialize Pusher
     this.pusher = new Pusher(environment.pusher.key, {
       cluster: environment.pusher.cluster,
+      authEndpoint: `${environment.apiUrl}/chat/pusher/auth`,
+      auth: {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+        },
+      },
+    });
+  }
+
+  private getHeaders(): HttpHeaders {
+    const token = localStorage.getItem('access_token');
+    return new HttpHeaders({
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
     });
   }
 
@@ -26,12 +40,10 @@ export class ChatService {
     // Subscribe to the user's channel
     this.channel = this.pusher.subscribe(`private-chat-${userId}`);
 
-    // Listen for new messages
     this.channel.bind('new-message', (data: Message) => {
       this.messageSubject.next(data);
     });
 
-    // Listen for message updates (read, delivered status)
     this.channel.bind('message-update', (data: Message) => {
       this.messageSubject.next(data);
     });
@@ -46,65 +58,143 @@ export class ChatService {
     }
   }
 
-  // Send a new message
-  sendMessage(message: Message): Observable<Message> {
-    return this.http.post<Message>(this.apiUrl, message);
-  }
-
-  // Get messages between two users
-  getMessages(senderId: string, receiverId: string): Observable<Message[]> {
-    return this.http.get<Message[]>(
-      `${this.apiUrl}/conversation/${senderId}/${receiverId}`
+  // Basic Message Operations
+  sendMessage(message: {
+    receiverId: string;
+    content: string;
+  }): Observable<Message> {
+    return this.http.post<Message>(
+      `${environment.apiUrl}/chat/messages`,
+      message,
+      {
+        headers: this.getHeaders(),
+      }
     );
   }
 
-  // Get all messages for a user
-  getUserMessages(userId: string): Observable<Message[]> {
-    return this.http.get<Message[]>(`${this.apiUrl}/user/${userId}`);
+  getConversation(userId: string): Observable<any> {
+    return this.http.get(`${environment.apiUrl}/chat/conversations/${userId}`, {
+      headers: this.getHeaders(),
+    });
   }
 
-  // Mark message as read
-  markAsRead(messageId: string): Observable<Message> {
-    return this.http.patch<Message>(`${this.apiUrl}/${messageId}/read`, {});
+  getAllConversations(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/conversations`, {
+      headers: this.getHeaders(),
+    });
   }
 
-  // Mark message as delivered
+  // Message Management
+  deleteMessage(messageId: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/messages/${messageId}`, {
+      headers: this.getHeaders(),
+    });
+  }
+
+  editMessage(messageId: string, content: string): Observable<Message> {
+    return this.http.patch<Message>(
+      `${this.apiUrl}/messages/${messageId}`,
+      { content },
+      { headers: this.getHeaders() }
+    );
+  }
+
   markAsDelivered(messageId: string): Observable<Message> {
     return this.http.patch<Message>(
-      `${this.apiUrl}/${messageId}/delivered`,
-      {}
+      `${this.apiUrl}/messages/${messageId}/deliver`,
+      {},
+      { headers: this.getHeaders() }
     );
   }
 
-  // Edit a message
-  editMessage(messageId: string, content: string): Observable<Message> {
-    return this.http.patch<Message>(`${this.apiUrl}/${messageId}`, { content });
+  markAsRead(messageId: string): Observable<Message> {
+    return this.http.patch<Message>(
+      `${this.apiUrl}/messages/${messageId}/read`,
+      {},
+      { headers: this.getHeaders() }
+    );
   }
 
-  // Delete a message
-  deleteMessage(messageId: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${messageId}`);
+  getUnreadCount(): Observable<number> {
+    return this.http.get<number>(`${this.apiUrl}/messages/unread/count`, {
+      headers: this.getHeaders(),
+    });
   }
 
-  // Add reaction to a message
+  // Advanced Features
+  sendAttachment(formData: FormData): Observable<Message> {
+    const token = localStorage.getItem('token');
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+    });
+    return this.http.post<Message>(
+      `${this.apiUrl}/messages/attachment`,
+      formData,
+      { headers }
+    );
+  }
+
   addReaction(
     messageId: string,
     userId: string,
     reaction: string
   ): Observable<Message> {
-    return this.http.post<Message>(`${this.apiUrl}/${messageId}/reactions`, {
-      userId,
-      reaction,
+    return this.http.post<Message>(
+      `${this.apiUrl}/messages/${messageId}/reactions`,
+      { userId, reaction },
+      { headers: this.getHeaders() }
+    );
+  }
+
+  setTypingStatus(userId: string, isTyping: boolean): Observable<void> {
+    return this.http.post<void>(
+      `${this.apiUrl}/conversations/${userId}/typing`,
+      { isTyping },
+      { headers: this.getHeaders() }
+    );
+  }
+
+  searchMessages(query: string): Observable<Message[]> {
+    return this.http.get<Message[]>(`${this.apiUrl}/messages/search`, {
+      params: { query },
+      headers: this.getHeaders(),
     });
   }
 
-  // Get group messages
-  getGroupMessages(groupId: string): Observable<Message[]> {
-    return this.http.get<Message[]>(`${this.apiUrl}/group/${groupId}`);
+  // Group Chat Management
+  createGroup(groupData: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/groups`, groupData, {
+      headers: this.getHeaders(),
+    });
   }
 
-  // Send group message
-  sendGroupMessage(message: Message): Observable<Message> {
-    return this.http.post<Message>(`${this.apiUrl}/group`, message);
+  addToGroup(groupId: string, userId: string): Observable<any> {
+    return this.http.post<any>(
+      `${this.apiUrl}/groups/${groupId}/members`,
+      { userId },
+      { headers: this.getHeaders() }
+    );
+  }
+
+  removeFromGroup(groupId: string, userId: string): Observable<void> {
+    return this.http.delete<void>(
+      `${this.apiUrl}/groups/${groupId}/members/${userId}`,
+      { headers: this.getHeaders() }
+    );
+  }
+
+  // User Status Management
+  updateUserStatus(status: string): Observable<User> {
+    return this.http.patch<User>(
+      `${this.apiUrl}/users/status`,
+      { status },
+      { headers: this.getHeaders() }
+    );
+  }
+
+  getOnlineUsers(): Observable<User[]> {
+    return this.http.get<User[]>(`${this.apiUrl}/users/online`, {
+      headers: this.getHeaders(),
+    });
   }
 }
