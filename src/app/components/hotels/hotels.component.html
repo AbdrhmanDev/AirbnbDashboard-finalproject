@@ -84,8 +84,7 @@
           <mat-icon>visibility</mat-icon>
           View
         </button>
-        <button mat-button color="accent" (click)="onUpdate(hotel._id)" *ngIf="canManageHotels()">
-          <mat-icon>edit</mat-icon>
+        <button mat-button color="accent" (click)="onUpdate(hotel._id)" *ngIf="canManageHotels() && userRole !== 'Admin'">          <mat-icon>edit</mat-icon>
           Edit
         </button>
         <button mat-button color="warn" (click)="onDelete(hotel)" *ngIf="canManageHotels()">

@@ -31,6 +31,7 @@ import { AdvantagesFormComponent } from '../create-hotel/advantages-form/advanta
 import { CloudinaryUploaderComponent } from '../../cloudinary-uploader/cloudinary-uploader.component';
 import * as L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { LoginService } from '../../../services/login.service';
 
 @Component({
   selector: 'app-update-hotel',
@@ -62,6 +63,7 @@ export class UpdateHotelComponent implements OnInit, AfterViewInit {
   hotelId!: string;
   categories: Category[] = [];
   isLoading = true;
+  currentUser: any;
 
   constructor(
     private fb: FormBuilder,
@@ -69,10 +71,21 @@ export class UpdateHotelComponent implements OnInit, AfterViewInit {
     private categoryService: CategoryService,
     private snackBar: MatSnackBar,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private loginService: LoginService
   ) {}
 
   ngOnInit(): void {
+    this.currentUser = this.loginService.getUserData();
+    if (!this.currentUser || this.currentUser.role !== 'Host') {
+      this.snackBar.open('Only hosts can edit hotels', 'Close', {
+        duration: 3000,
+        panelClass: ['error-snackbar']
+      });
+      this.router.navigate(['/hotels']);
+      return;
+    }
+    
     this.hotelId = this.route.snapshot.params['id'];
     this.initForm();
     this.loadCategories();
