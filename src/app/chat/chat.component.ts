@@ -57,12 +57,19 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.loadOnlineUsers();
     this.subscribeToChat();
 
-    // إضافة فحص دوري لتحديث المحادثات
+    // تحديث المحادثة المفتوحة فقط كل 5 ثواني
     setInterval(() => {
-      if (this.isChatOpen) {
-        this.loadConversations();
+      if (this.selectedConversation) {
+        this.chatService
+          .getConversation(this.selectedConversation._id._id)
+          .subscribe((response) => {
+            if (response.type === 'initial' && Array.isArray(response.data)) {
+              this.messages = response.data;
+              this.changeDetectorRef.detectChanges();
+            }
+          });
       }
-    }, 5000); // تحديث كل 5 ثواني
+    }, 5000);
   }
 
   toggleChat() {
