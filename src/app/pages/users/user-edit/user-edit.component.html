@@ -52,7 +52,7 @@
             placeholder="Choose a date" />
           <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
           <mat-datepicker #picker></mat-datepicker>
-          <mat-error *ngIf="userForm.get('dateOfBirth')?.invalid">
+          <mat-error *ngIf="userForm.get('dateOfBirth')?.invalid" disabled>
             {{ getErrorMessage("dateOfBirth") }}
           </mat-error>
         </mat-form-field>

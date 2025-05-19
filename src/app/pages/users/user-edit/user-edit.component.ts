@@ -132,7 +132,16 @@ export class UserEditComponent implements OnInit {
             city: user.address?.city || '',
           },
         });
+
+        // عرض الصورة القديمة
         this.imagePreview = user.avatar || null;
+
+        // تعطيل كل الحقول
+        this.userForm.disable();
+
+        // تمكين حقل role فقط
+        this.userForm.get('role')?.enable();
+
         this.isLoading = false;
       },
       error: (error) => {
