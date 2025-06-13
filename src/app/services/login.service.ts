@@ -12,7 +12,9 @@ interface LoginResponse {
   providedIn: 'root',
 })
 export class LoginService {
-  private apiUrl = 'http://localhost:3000/users'; // Replace with your API URL
+  // private apiUrl = 'http://localhost:3000/users'; // Replace with your API URL
+  private apiUrl =
+    'https://fundamental-amitie-ahmedkamal-a550a1ad.koyeb.app/users'; // Replace with your API URL
 
   constructor(private http: HttpClient) {}
 

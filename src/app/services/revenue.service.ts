@@ -9,7 +9,9 @@ interface RevenueResponse {
   providedIn: 'root',
 })
 export class RevenueService {
-  private apiUrl = 'http://localhost:3000/bookings'; // Replace with actual API URL
+  // private apiUrl = 'http://localhost:3000/bookings'; // Replace with actual API URL
+  private apiUrl =
+    'https://fundamental-amitie-ahmedkamal-a550a1ad.koyeb.app/bookings'; // Replace with actual API URL
 
   constructor(private http: HttpClient) {}
   private getAuthHeaders(): HttpHeaders {

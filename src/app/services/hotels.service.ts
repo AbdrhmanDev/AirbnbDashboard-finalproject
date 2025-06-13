@@ -12,7 +12,9 @@ import { Hotel2 } from '../models/hoteln';
   providedIn: 'root',
 })
 export class HotelsService {
-  private apiUrl = 'http://localhost:3000/Hotel'; // Replace with actual API URL
+  // private apiUrl = 'http://localhost:3000/Hotel'; // Replace with actual API URL
+  private apiUrl =
+    'https://fundamental-amitie-ahmedkamal-a550a1ad.koyeb.app/Hotel'; // Replace with actual API URL
 
   constructor(private http: HttpClient) {}
   private getAuthHeaders(): HttpHeaders {
