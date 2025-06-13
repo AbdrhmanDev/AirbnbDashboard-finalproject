@@ -53,6 +53,15 @@ import { LoginService } from '../../../services/login.service';
   styleUrls: ['./update-hotel.component.css'],
 })
 export class UpdateHotelComponent implements OnInit, AfterViewInit {
+  private defaultIcon = L.icon({
+    iconUrl: '/assets/marker-icon.png',
+    shadowUrl: '/assets/marker-shadow.png',
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41],
+  });
+
   @ViewChild('map') mapContainer!: ElementRef;
   private map!: L.Map;
   private marker!: L.Marker;
@@ -80,12 +89,12 @@ export class UpdateHotelComponent implements OnInit, AfterViewInit {
     if (!this.currentUser || this.currentUser.role !== 'Host') {
       this.snackBar.open('Only hosts can edit hotels', 'Close', {
         duration: 3000,
-        panelClass: ['error-snackbar']
+        panelClass: ['error-snackbar'],
       });
       this.router.navigate(['/hotels']);
       return;
     }
-    
+
     this.hotelId = this.route.snapshot.params['id'];
     this.initForm();
     this.loadCategories();
@@ -116,7 +125,9 @@ export class UpdateHotelComponent implements OnInit, AfterViewInit {
       if (this.marker) {
         this.marker.setLatLng([lat, lng]);
       } else {
-        this.marker = L.marker([lat, lng]).addTo(this.map);
+        this.marker = L.marker([lat, lng], { icon: this.defaultIcon }).addTo(
+          this.map
+        );
       }
 
       // Update form values
@@ -328,7 +339,9 @@ export class UpdateHotelComponent implements OnInit, AfterViewInit {
       if (this.marker) {
         this.marker.setLatLng([lat, lng]);
       } else {
-        this.marker = L.marker([lat, lng]).addTo(this.map);
+        this.marker = L.marker([lat, lng], { icon: this.defaultIcon }).addTo(
+          this.map
+        );
       }
       this.map.setView([lat, lng], 13);
     }

@@ -49,7 +49,7 @@
 }
 
 .form-section h3::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: 0;
   left: 0;
@@ -79,7 +79,9 @@
   color: #e0e0e0;
 }
 
-::ng-deep .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-thick {
+::ng-deep
+  .mat-form-field-appearance-outline.mat-focused
+  .mat-form-field-outline-thick {
   color: #ff385c;
 }
 
@@ -254,7 +256,6 @@ mat-error {
   }
 }
 
-
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .form-row {
@@ -269,4 +270,13 @@ mat-error {
   .checkbox-group {
     grid-template-columns: 1fr;
   }
+}
+
+/* Fix for Leaflet marker icons */
+:host ::ng-deep .leaflet-default-icon-path {
+  background-image: url(/assets/marker-icon.png);
+}
+
+:host ::ng-deep .leaflet-default-shadow-path {
+  background-image: url(/assets/marker-shadow.png);
 }

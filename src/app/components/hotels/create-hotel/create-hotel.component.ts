@@ -56,6 +56,14 @@ export class CreateHotelComponent implements OnInit, AfterViewInit {
   private marker!: L.Marker;
   private defaultLat = 30.0444; // Default latitude (Cairo)
   private defaultLng = 31.2357; // Default longitude (Cairo)
+  private defaultIcon = L.icon({
+    iconUrl: '/assets/marker-icon.png',
+    shadowUrl: '/assets/marker-shadow.png',
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41],
+  });
 
   hotelForm!: FormGroup;
   imageFiles: File[] = [];
@@ -328,7 +336,9 @@ export class CreateHotelComponent implements OnInit, AfterViewInit {
       if (this.marker) {
         this.marker.setLatLng([lat, lng]);
       } else {
-        this.marker = L.marker([lat, lng]).addTo(this.map);
+        this.marker = L.marker([lat, lng], { icon: this.defaultIcon }).addTo(
+          this.map
+        );
       }
 
       // Update form values
