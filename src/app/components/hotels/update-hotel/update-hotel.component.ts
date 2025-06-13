@@ -54,8 +54,8 @@ import { LoginService } from '../../../services/login.service';
 })
 export class UpdateHotelComponent implements OnInit, AfterViewInit {
   private defaultIcon = L.icon({
-    iconUrl: '/assets/marker-icon.png',
-    shadowUrl: '/assets/marker-shadow.png',
+    iconUrl: 'assets/marker-icon.png',
+    shadowUrl: 'assets/marker-shadow.png',
     iconSize: [25, 41],
     iconAnchor: [12, 41],
     popupAnchor: [1, -34],

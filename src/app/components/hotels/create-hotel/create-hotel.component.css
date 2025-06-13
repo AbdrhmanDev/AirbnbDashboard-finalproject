@@ -170,9 +170,9 @@ button[color="primary"] {
 
 /* Fix for Leaflet marker icons */
 :host ::ng-deep .leaflet-default-icon-path {
-  background-image: url(/assets/marker-icon.png);
+  background-image: url("leaflet/marker-icon.png");
 }
 
 :host ::ng-deep .leaflet-default-shadow-path {
-  background-image: url(/assets/marker-shadow.png);
+  background-image: url("leaflet/marker-shadow.png");
 }

@@ -57,8 +57,8 @@ export class CreateHotelComponent implements OnInit, AfterViewInit {
   private defaultLat = 30.0444; // Default latitude (Cairo)
   private defaultLng = 31.2357; // Default longitude (Cairo)
   private defaultIcon = L.icon({
-    iconUrl: '/assets/marker-icon.png',
-    shadowUrl: '/assets/marker-shadow.png',
+    iconUrl: 'assets/marker-icon.png',
+    shadowUrl: 'assets/marker-shadow.png',
     iconSize: [25, 41],
     iconAnchor: [12, 41],
     popupAnchor: [1, -34],
