@@ -24,16 +24,26 @@
                 "input": "public"
               },
               {
-                "glob": "*.png",
-                "input": "./node_modules/leaflet/dist/images",
-                "output": "./assets"
+                "glob": "**/*.png",
+                "input": "./node_modules/leaflet/dist/images/",
+                "output": "./assets/"
+              },
+              {
+                "glob": "**/*",
+                "input": "src/assets",
+                "output": "/assets/"
               }
             ],
             "allowedCommonJsDependencies": ["leaflet"],
             "styles": [
               "@angular/material/prebuilt-themes/cyan-orange.css",
-
-              "src/styles.css"
+              "src/styles.css",
+              "src/assets/leaflet-overrides.css",
+              {
+                "input": "node_modules/leaflet/dist/leaflet.css",
+                "bundleName": "leaflet",
+                "inject": true
+              }
             ],
             "scripts": []
           },

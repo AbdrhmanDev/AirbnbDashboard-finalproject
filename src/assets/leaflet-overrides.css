@@ -1,0 +1,18 @@
+/* Override Leaflet default image paths */
+.leaflet-control-layers-toggle {
+  background-image: url("assets/layers.png");
+}
+
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .leaflet-control-layers-toggle {
+    background-image: url("assets/layers-2x.png");
+  }
+}
+
+.leaflet-default-icon-path {
+  background-image: url("assets/marker-icon.png");
+}
+
+.leaflet-default-shadow-path {
+  background-image: url("assets/marker-shadow.png");
+}
